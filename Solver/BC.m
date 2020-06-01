@@ -7,7 +7,7 @@ if icase == 1
     unp1(jb+1) = unp1(jb-1);
 else
     unp1(ja-1) = 2*unp1(ja)-unp1(ja+1);
-    unp1(jb+1) = def.r(n*dt);
+    unp1(jb+1) = 2*unp1(jb)-unp1(jb-1);
 end
 
 end
