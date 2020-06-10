@@ -1,16 +1,28 @@
-function [unp1] = BC(def,j,dt,unp1,icase)
+function [unp1] = BC(ja,jb,def,sigma,n,x,dt,unp1,icase,oacc)
+% Currently only second order accurate
 
-if icase == 1
-    unp1(1) = def.l(j*dt);
-    unp1(def.N+1) = (4*unp1(def.N)-unp1(def.N-1))/3;
+if oacc == 2
+    if icase == 1
+        % Assuming l_tt = 0
+        unp1(ja-1) = 2*unp1(ja)-unp1(ja+1);
+        unp1(jb+1) = unp1(jb-1);
+    else
+        unp1(ja-1) = 2*unp1(ja)-unp1(ja+1);
+        unp1(jb+1) = 2*unp1(jb)-unp1(jb-1);
+    end
 else
-    unp1(1) = def.l(j*dt);
-    unp1(def.N+1) = def.r(j*dt);
+    if icase == 1
+        dx = x(2) - x(1);
+        A = [2/3 -1/12; -2 1];
+        b = A\[2/3*unp1(jb-1)-1/12*unp1(jb-2) + dx*def.r(n*dt)  ;  
+            -2*unp1(jb-1)+unp1(jb-2) + 2*dx/sigma^2*(def.r(dt*(n+1))-2*def.r(dt*n)+def.r(dt*(n-1)))];
+        
+        unp1(jb+1) = b(1);
+        unp1(jb+2) = b(2);
+    else
+        
+    end
 end
-
-
-
-
 
 end
 

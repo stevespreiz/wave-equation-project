@@ -21,38 +21,44 @@ y = @(x,t) 0.5*(def.f(x-def.c*t)+def.f(x+def.c*t));
 
 %% Initial Condition
 unm1 = ICs(def,x,unm1);
-% plot(x(ja:jb),unm1(ja:jb));
+% plot(x,unm1);
 % pause
 
 %% First Time Step
-% un = firstStep(ja,jb,def,x,dt,sigma,unm1,un);
-% un = BC(ja,jb,def,1,dt,un,icase,oacc);
-for i = 1:def.N+3
+% un = firstStep(ja,jb,def,x,dt,sigma,unm1,un,2);
+
+for i = 1:def.N+5
     un(i) = y(x(i),dt);
 end
+un = BC(ja,jb,def,sigma,1,x,dt,un,icase,4);
 
-% plot(x(ja:jb),un(ja:jb));
+un(1) = y(x(1),dt);
+un(2) = y(x(2),dt);
+% un(def.N+2) = y(x(def.N+2),dt);
+% un(def.N+3) = y(x(def.N+3),dt);
+% plot(x,un);
 % pause
 %% Remaining Time Steps
 n = 2;
 while n*dt <= tf
     % Update middle values
-    unp1 = remainingSteps(ja,jb,sigma,unm1,un,unp1,oacc);
+    unp1 = timeStep(ja,jb,sigma,unm1,un,unp1,oacc);
     
     % Update boundary conditions depending on case
-%     unp1 = BC(ja,jb,def,n,dt,unp1,icase,oacc);
+     unp1 = BC(ja,jb,def,sigma,n,x,dt,unp1,icase,oacc);
     unp1(1) = y(x(1),n*dt);
     unp1(2) = y(x(2),n*dt);
-    unp1(def.N+2) = y(x(def.N+2),n*dt);
-    unp1(def.N+3) = y(x(def.N+3),n*dt);
+%     unp1(def.N+2) = y(x(def.N+2),n*dt);
+%     unp1(def.N+3) = y(x(def.N+3),n*dt);
     
     unm1 = un;
     un = unp1;
-    
-%     plot(x(ja:jb),un(ja:jb));
+%     
+%     plot(x,un);
+%     xlim([-.1 1.1])
 %     ylim([-1 1])
-%     pause(.01)
-    
+%     pause(.1)
+%     
     n = n+1;
 end
 
