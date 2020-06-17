@@ -33,6 +33,12 @@ while n*dt <= tf
     % Apply Boundary Condition
     unp1 = BC(def,sigma,x,n,dt,ja,jb,unp1,nD,icase,oacc);
     
+    % Optional Animation
+%     plot(x,unp1);
+%     ylim([-1.1 1.1])
+%     xlim([-.1 1.1])
+%     pause(.1);
+    
     % Update arrays
     unm1 = un;
     un = unp1;
@@ -40,12 +46,14 @@ while n*dt <= tf
     n = n+1;
 end
 
-% Error calc with exact solution for case 1
-y = @(x,t) 0.5*(def.f(x-def.c*t)+def.f(x+def.c*t)+ integral(def.g,x-def.c*t,x+def.c*t)/def.c);
-
 e = 0;
-for i = ja:jb
-    e = max(e,abs(un(i)-y(x(i),tf)));
+if icase == 1
+    % Error calc with exact solution for case 1
+    y = @(x,t) 0.5*(def.f(x-def.c*t)+def.f(x+def.c*t)+ integral(def.g,x-def.c*t,x+def.c*t)/def.c);
+
+    for i = ja:jb
+        e = max(e,abs(un(i)-y(x(i),tf)));
+    end
 end
 
 u = un(ja:jb);
