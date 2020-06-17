@@ -27,17 +27,17 @@ un = BC(def,sigma,x,1,dt,ja,jb,un,nD,icase,oacc);
 % Remaining Time Steps
 n = 2;
 while n*dt <= tf
-   % Update middle values
-   unp1 = timeStep(sigma,ja,jb,unm1,un,unp1,nD,oacc);
-   
-   % Apply Boundary Condition
-   unp1 = BC(def,sigma,x,n,dt,ja,jb,unp1,nD,icase,oacc);
-   
-   % Update arrays
-   unm1 = un;
-   un = unp1;
-   
-   n = n+1;
+    % Update middle values
+    unp1 = timeStep(sigma,ja,jb,unm1,un,unp1,nD,oacc);
+    
+    % Apply Boundary Condition
+    unp1 = BC(def,sigma,x,n,dt,ja,jb,unp1,nD,icase,oacc);
+    
+    % Update arrays
+    unm1 = un;
+    un = unp1;
+    
+    n = n+1;
 end
 
 % Error calc with exact solution for case 1
