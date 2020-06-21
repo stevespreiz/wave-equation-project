@@ -1,23 +1,30 @@
 % 4th order accurate method using exact soln for ghost points and first
 % 2 time steps for now
-
+%%
 def.a = 0;
 def.b = 1;
-def.N = 100;
+def.N = 10;
 def.c = 1;
-tf = 3.15;
+tf = 3;
 def.f = @(x) sin(3*pi/2*x);
-def.g = @(x) 0;
-def.l = @(t) 0;
-def.r = @(t) 0;
+def.g = @(x) 0*x;
+def.l = @(t) 0*t;
+def.r = @(t) 0*t;
 sigma = .9;
 y = @(x,t) 0.5*(def.f(x-def.c*t)+def.f(x+def.c*t));
+
+nD = 1;
+icase = 1;
+oacc = 2;
+
+[un,~] = nDWaveSolver(def,sigma,tf,nD,icase,oacc);
+%%
 
 % [u,e] = oneDSolver4(def,tf,sigma,1,4);
 
 for n = [10 100 1000]
    def.N = n;
-   [u,er] = oneDSolver4(def, tf, sigma, 1,4);
+   [u,er] = nDWaveSolver(def, sigma, 1, 1,1,2);
    e(log10(n)) = er;
 end
 
