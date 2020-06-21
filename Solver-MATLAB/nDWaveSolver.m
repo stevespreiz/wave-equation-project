@@ -23,7 +23,7 @@ unm1 = IC(def,x,unm1);
 % First Time Step
 un = firstStep(def,sigma,x,dt,ja,jb,unm1,un,nD,oacc);
 un = BC(def,sigma,x,1,dt,ja,jb,un,nD,icase,oacc);
-
+pause
 % Remaining Time Steps
 n = 2;
 while n*dt <= tf
@@ -34,10 +34,10 @@ while n*dt <= tf
     unp1 = BC(def,sigma,x,n,dt,ja,jb,unp1,nD,icase,oacc);
     
     % Optional Animation
-%     plot(x,unp1);
-%     ylim([-1.1 1.1])
-%     xlim([-.1 1.1])
-%     pause(.1);
+    plot(x,unp1);
+    ylim([-1.1 1.1])
+    xlim([-.1 1.1])
+    pause;
     
     % Update arrays
     unm1 = un;
