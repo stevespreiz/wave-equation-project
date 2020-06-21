@@ -22,12 +22,13 @@ public:
   double operator() (double x) { return 0; }
 };
 
-//
+// Left side BC
 class L{
 public:
   double operator() (double x) { return 0; }
 };
 
+// Right side BC
 class R{
 public:
   double operator() (double x) { return 0; }
@@ -101,7 +102,7 @@ int main(int argc, char* argv[]){
   def->a = 0;
   def->b = 1;
   def->c = 1;
-  def->N = 10;
+  def->N = 100;
   def->f = f;
   def->g = g;
   def->l = l;
@@ -116,7 +117,7 @@ int main(int argc, char* argv[]){
   /////////////////////////////////////////////////////////////////////////////
   //  Setup
 
-  // Set indexing variabls
+  //  Set indexing variabls
   int ja = oacc/2;
   int jb = def->N + oacc/2;
 
@@ -126,7 +127,7 @@ int main(int argc, char* argv[]){
   double* x = new double[arrSize];
   for(int i = 0; i < arrSize; i++){
     x[i] = (i - oacc/2)*dx;
-    if(i >= ja && i <= jb) fout << x[i] << "\t";
+    fout << x[i] << "\t";
   }
   fout << endl;
 
@@ -138,7 +139,7 @@ int main(int argc, char* argv[]){
   //  Update sigma
   sigma  = def->c * dt/dx;
 
-  // Initialize grid
+  //  Initialize grid
   double* unm1 = new double[arrSize];
   double* un   = new double[arrSize];
   double* unp1 = new double[arrSize];
@@ -147,7 +148,7 @@ int main(int argc, char* argv[]){
   //  Initial Condition
   for(int i = 0; i < arrSize; i++){
     unm1[i] = def->f(x[i]);
-    if(i >= ja && i <= jb) fout << unm1[i] << "\t";
+    fout << unm1[i] << "\t";
   }
   fout << endl;
 
@@ -157,20 +158,22 @@ int main(int argc, char* argv[]){
     if(oacc == 2){
       for(int i = ja; i <= jb; i++){
         un[i] = (1-pow(sigma,2))*unm1[i] + dt*def->g(x[i])+pow(sigma,2)/2*(unm1[i-1]+unm1[i+1]);
-        fout << un[i] << "\t";
+
       }
     }
     else if(oacc == 4){
       for(int i = ja; i<= jb; i++){
 
-        fout << un[i] << "\t";
       }
     }
   }
-  fout << endl;
+
 
   BC(def,sigma,x,1,dt,ja,jb,un,nD,icase,oacc);
 
+  for(int i = 0; i < arrSize ; i++)
+    fout<<un[i] << "\t";
+  fout << endl;
   /////////////////////////////////////////////////////////////////////////////
   //  Rest of the time steps
   int n = 2;
@@ -182,10 +185,13 @@ int main(int argc, char* argv[]){
     BC(def,sigma,x,n,dt,ja,jb,unp1,nD,icase,oacc);
 
     // Update array pointers
-    unm1 = un;
-    un = unp1;
+    for(int i = 0; i<arrSize; i++){
+      unm1[i] = un[i];
+      un[i] = unp1[i];
+    }
 
-    for(int i = ja; i<= jb; i++){
+
+    for(int i = 0; i< arrSize; i++){
       fout << un[i] << "\t";
     }
     fout << endl;
@@ -198,8 +204,6 @@ int main(int argc, char* argv[]){
   for(int i = ja; i <= jb; i++){
     cout << "x: " << x[i] << "\tu = " << un[i] << endl;
   }
-
-
 
   fout.close();
   /////////////////////////////////////////////////////////////////////////////
