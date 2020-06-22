@@ -81,6 +81,9 @@ elseif nD == 2
                 unp1(ja(1)-1, j) = 2*unp1(ja(1), j) - unp1(ja(1)+1,j);
                 unp1(jb(1)+1, j) = 2*unp1(jb(1), j) - unp1(jb(1)-1,j);
             end
+            
+        elseif oacc == 4
+            
         end
     end
 end

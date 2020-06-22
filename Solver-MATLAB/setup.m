@@ -25,7 +25,7 @@ if nD == 1
     ja = 1 + oacc/2;
     jb = def.N + 1 + oacc/2;
     
-    
+    y = 0;
 elseif nD == 2
     % Steps in space
     dx = (def.b(1)-def.a(1))/def.N(1);

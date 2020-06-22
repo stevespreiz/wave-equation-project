@@ -17,20 +17,13 @@ function [u,e] = nDWaveSolver(def,sigma,tf,nD,icase,oacc)
 
 % Setup
 [sigma,x,y,dt,unm1,un,unp1,ja,jb] = setup(def,sigma,tf,nD,oacc);
-[X,Y] = meshgrid(x,y);
 % Initial Condition
 unm1 = IC(def,x,y,unm1,nD);
-figure(1)
-surf(X,Y,unm1);
-zlim([-1 1])
-pause(.1)
+
 
 % First Time Step
 un = firstStep(def,sigma,x,y,dt,ja,jb,unm1,un,nD,oacc);
 un = BC(def,sigma,x,y,1,dt,ja,jb,un,nD,icase,oacc);
-surf(X,Y,un);
-zlim([-1 1])
-pause(.1)
 
 % Remaining Time Steps
 n = 2;
@@ -52,11 +45,6 @@ while n*dt <= tf
     unm1 = un;
     un = unp1;
     
-    surf(X,Y,un);
-    xlabel('x')
-    ylabel('y')
-    zlim([-.25 .25])
-    pause(.01)
     
     n = n+1;
 end
