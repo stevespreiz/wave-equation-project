@@ -5,7 +5,7 @@ function [unm1] = IC(def,x,y,unm1,nD)
 [~,n] = size(y);
 
 if nD == 1
-    for i = 1:n
+    for i = 1:m
         unm1(i) = def.f(x(i));
     end
 elseif nD == 2

@@ -20,14 +20,12 @@ function [u,e] = nDWaveSolver(def,sigma,tf,nD,icase,oacc)
 
 % Initial Condition
 unm1 = IC(def,x,y,unm1,nD);
-surf(unm1)
-pause
+
 
 % First Time Step
 un = firstStep(def,sigma,x,y,dt,ja,jb,unm1,un,nD,oacc);
 un = BC(def,sigma,x,y,1,dt,ja,jb,un,nD,icase,oacc);
-surf(un(ja(1):jb(1),ja(2):jb(2)))
-pause
+
 % Remaining Time Steps
 n = 2;
 while n*dt <= tf
@@ -43,9 +41,6 @@ while n*dt <= tf
 %     xlim([-.1 1.1])
 %     pause;
 
-    surf(unp1(ja(1):jb(1),ja(2):jb(2)))
-    shading interp
-    pause
     
     % Update arrays
     unm1 = un;

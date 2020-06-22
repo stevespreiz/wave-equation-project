@@ -21,7 +21,16 @@ oacc = 2;
 %%
 
 % [u,e] = oneDSolver4(def,tf,sigma,1,4);
-
+def.a = 0;
+def.b = 1;
+def.N = 10;
+def.c = 1;
+tf = 3;
+def.f = @(x) sin(3*pi/2*x);
+def.g = @(x) 0*x;
+def.l = @(t) 0*t;
+def.r = @(t) 0*t;
+sigma = .9;
 for n = [10 100 1000]
    def.N = n;
    [u,er] = nDWaveSolver(def, sigma, 1, 1,1,2);
