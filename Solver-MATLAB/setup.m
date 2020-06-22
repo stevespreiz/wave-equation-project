@@ -25,7 +25,6 @@ if nD == 1
     ja = 1 + oacc/2;
     jb = def.N + 1 + oacc/2;
     
-    y = 0;
     
 elseif nD == 2
     % Steps in space
@@ -54,7 +53,7 @@ elseif nD == 2
     
     % Set indexing variables
     ja(1) = 1 + oacc/2;
-    ja(2) = ja(1);
+    ja(2) = 1 + oacc/2;
     jb(1) = def.N(1) + 1 + oacc/2;
     jb(2) = def.N(2) + 1 + oacc/2;
 end

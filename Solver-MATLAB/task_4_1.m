@@ -44,22 +44,34 @@ h4 = h.^4;
 figure
 loglog(h,e,'o',h,h,h, h2,h,h3,h,h4)
 legend('error', 'h' ,'h^2','h^3', 'h^4')
+
+
 %% 2-D Time
 def.a = [0 0];
-def.b = [pi pi];
+def.b = [1 1];
 def.N = [100 100];
 def.c = 4;
 tf = 1;
-def.f = @(x,y) sin(x)*cos(y-pi/2);
+def.f = @(x,y) sin(x*pi)*y*(1-y);
 def.g = @(x,y) 0*x*y;
 def.l = @(t) 0*t;
 def.r = @(t) 0*t;
 def.t = @(t) 0*t;
 def.bot = @(t) 0*t;
-sigma = [.4 .4];
+sigma = [.35 .35];
 
+% Steps in space
+dx = (def.b(1)-def.a(1))/def.N(1);
+x  = linspace(def.a(1) - dx*oacc/2, def.b(1) + dx*oacc/2, def.N(1)+1+oacc);
+
+dy = (def.b(2)-def.a(2))/def.N(2);
+y  = linspace(def.a(2) - dx*oacc/2, def.b(2) + dx*oacc/2, def.N(2)+1+oacc);
 nD = 2;
 icase = 2;
 oacc = 2;
 
 [un,~] = nDWaveSolver(def,sigma,tf,nD,icase,oacc);
+
+surf(x,y,un)
+xlabel('x')
+ylabel('y')
