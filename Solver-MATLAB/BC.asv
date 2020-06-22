@@ -1,4 +1,4 @@
-function [unp1] = BC(def,sigma,x,y,n,dt,ja,jb,unp1,nD,icase,oacc)
+function [unp1] = BC(def,sigma,x,n,dt,ja,jb,unp1,nD,icase,oacc)
 % Applies boundary conditions dependent on the case
 
 if nD == 1
@@ -74,14 +74,13 @@ elseif nD == 2
     elseif icase == 2
         if oacc == 2
             for i = ja(1):jb(1)
-               unp1(i,ja(2) - 1) = 2*unp1(i,ja(2)) - unp1(i,ja(2)+1);
-               unp1(i,jb(2) + 1) = 2*unp1(i,jb(2)) - unp1(i,jb(2)-1);
+               unp1(i,ja(2) - 1) = 2*unp1(i,ja(2) - unp1(i,ja(2)+1);
+               unp1(i,jb(2) + 1) = 2*unp1(i,jb(2) - unp1(i,jb(2)-1);
             end
             for j = ja(2):jb(2)
                 unp1(ja(1)-1, j) = 2*unp1(ja(1), j) - unp1(ja(1)+1,j);
                 unp1(jb(1)+1, j) = 2*unp1(jb(1), j) - unp1(jb(1)-1,j);
             end
-            
         end
     end
 end

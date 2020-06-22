@@ -35,3 +35,22 @@ h4 = h.^4;
 figure
 loglog(h,e,'o',h,h,h, h2,h,h3,h,h4)
 legend('error', 'h' ,'h^2','h^3', 'h^4')
+%% 2-D Time
+def.a = [0 0];
+def.b = [pi pi];
+def.N = [100 100];
+def.c = 4;
+tf = 1;
+def.f = @(x,y) sin(x)*cos(y-pi/2);
+def.g = @(x,y) 0*x*y;
+def.l = @(t) 0*t;
+def.r = @(t) 0*t;
+def.t = @(t) 0*t;
+def.bot = @(t) 0*t;
+sigma = [.4 .4];
+
+nD = 2;
+icase = 2;
+oacc = 2;
+
+[un,~] = nDWaveSolver(def,sigma,tf,nD,icase,oacc);

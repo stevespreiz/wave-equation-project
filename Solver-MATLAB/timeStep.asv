@@ -14,7 +14,7 @@ elseif nD == 2
            for j = ja(2):jb(2)
                unp1(i,j) = 2*un(i,j) - unm1(i,j) + ...
                    sigma(1)^2*(un(i+1,j) - 2*un(i,j) + un(i-1,j))+ ...
-                   sigma(2)^2*(un(i,j+1) - 2*un(i,j) + un(i,j-1));
+                   sigma(2)^2*(un(
            end
        end
     end
