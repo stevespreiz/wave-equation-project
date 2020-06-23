@@ -31,7 +31,7 @@ def.f = @(x) sin(3*pi/2*x);
 def.g = @(x) 0*x;
 def.l = @(t) 0*t;
 def.r = @(t) 0*t;
-sigma = .05;
+sigma = .2;
 
 for n = [10 20 50 100]
     def.N = n;

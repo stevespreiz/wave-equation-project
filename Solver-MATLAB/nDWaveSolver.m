@@ -22,12 +22,15 @@ ys = @(x,t) 0.5*(def.f(x-def.c*t)+def.f(x+def.c*t)+ integral(def.g,x-def.c*t,x+d
 unm1 = IC(def,x,unm1);
 
 % First Time Step
-% un = firstStep(def,sigma,x,dt,ja,jb,unm1,un,nD,oacc);
+un = firstStep(def,sigma,x,dt,ja,jb,unm1,un,nD,oacc);
 % un = BC(def,sigma,x,1,dt,ja,jb,un,nD,icase,oacc);
+un(ja-3) = ys(x(ja-3),dt);
+un(ja-2) = ys(x(ja-2),dt);
+un(ja-1) = ys(x(ja-1),dt);
+un(jb+1) = ys(x(jb+1),dt);
+un(jb+2) = ys(x(jb+2),dt);
+un(jb+3) = ys(x(jb+3),dt);
 
-for i = 1:def.N+1+oacc
-   un(i) = ys(x(i),dt); 
-end
 
 
 % Remaining Time Steps
