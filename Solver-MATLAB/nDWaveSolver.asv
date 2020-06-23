@@ -33,11 +33,11 @@ while n*dt <= tf
     % Apply Boundary Condition
     unp1 = BC(def,sigma,x,n,dt,ja,jb,unp1,nD,icase,oacc);
     
-    % Optional Animation
-%     plot(x,unp1);
-%     ylim([-1.1 1.1])
-%     xlim([-.1 1.1])
-%     pause(.1);
+    %optional Animation
+    plot(x,unp1);
+    ylim([-1.1 1.1])
+    xlim([-.1 1.1])
+    pause(.1);
     
     % Update arrays
     unm1 = un;
