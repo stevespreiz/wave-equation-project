@@ -17,10 +17,26 @@ nD = 1;
 icase = 1;
 oacc = 2;
 
-[un,~] = nDWaveSolver(def,sigma,tf,nD,icase,oacc);
+% [un,~] = nDWaveSolver(def,sigma,tf,nD,icase,oacc);
 %%
-
+close all
 % [u,e] = oneDSolver4(def,tf,sigma,1,4);
+def.a = 0;
+def.b = 1;
+def.N = 10;
+def.c = 1;
+tf = 2;
+def.f = @(x) sin(3*pi/2*x);
+def.g = @(x) 0*x;
+def.l = @(t) 0*t;
+def.r = @(t) 0*t;
+sigma = .9;
+y = @(x,t) 0.5*(def.f(x-def.c*t)+def.f(x+def.c*t));
+
+nD = 1;
+icase = 1;
+oacc = 2;
+
 
 for n = [10 100 1000]
    def.N = n;
