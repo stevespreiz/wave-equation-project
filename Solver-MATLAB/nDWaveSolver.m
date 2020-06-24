@@ -49,10 +49,10 @@ end
 e = 0;
 if icase == 1
     % Error calc with exact solution for case 1
-    y = @(x,t) 0.5*(def.f(x-def.c*t)+def.f(x+def.c*t)+ integral(def.g,x-def.c*t,x+def.c*t)/def.c);
+    ys = @(x,t) 0.5*(def.f(x-def.c*t)+def.f(x+def.c*t)+ integral(def.g,x-def.c*t,x+def.c*t)/def.c);
 
     for i = ja:jb
-        e = max(e,abs(un(i)-y(x(i),tf)));
+        e = max(e,abs(un(i)-ys(x(i),tf)));
     end
 end
 
