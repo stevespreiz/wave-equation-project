@@ -3,21 +3,20 @@
 %%
 def.a = 0;
 def.b = 1;
-def.N = 10;
+def.N = 100;
 def.c = 1;
 tf = 3;
-def.f = @(x) sin(3*pi/2*x);
-def.g = @(x) 0*x;
+def.f = @(x) pluck(x);
+def.g = @(x) 0.25+0*x;
 def.l = @(t) 0*t;
 def.r = @(t) 0*t;
 sigma = .9;
-y = @(x,t) 0.5*(def.f(x-def.c*t)+def.f(x+def.c*t));
 
 nD = 1;
-icase = 1;
+icase = 2;
 oacc = 2;
 
-% [un,~] = nDWaveSolver(def,sigma,tf,nD,icase,oacc);
+[un,~] = nDWaveSolver(def,sigma,tf,nD,icase,oacc);
 %%
 close all
 % [u,e] = oneDSolver4(def,tf,sigma,1,4);
