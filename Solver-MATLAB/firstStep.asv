@@ -1,4 +1,4 @@
-function [un] = firstStep(def,sigma,x,dt,ja,jb,unm1,un,nD,oacc,iTZ)
+function [un] = firstStep(def,sigma,x,dt,ja,jb,unm1,un,nD,oacc)
 % Executes first time step
 
 if iTZ == 0
@@ -25,11 +25,7 @@ if iTZ == 0
     end
     
 elseif iTZ == 1
-    if nD == 1
-       for i = ja:jb
-          un(i) = x(i)^2*dt^2; 
-       end
-    end
+    
 end
 
 end

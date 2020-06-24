@@ -1,4 +1,4 @@
-function [unp1] = BC(def,sigma,x,n,dt,ja,jb,unp1,nD,icase,oacc,iTZ)
+function [unp1] = BC(def,sigma,x,n,dt,ja,jb,unp1,nD,icase,oacc)
 % Applies boundary conditions dependent on the case
 dx = x(2)-x(1);
 if iTZ == 0
@@ -134,8 +134,7 @@ elseif iTZ == 1
    if nD == 1
       if icase == 1
           if oacc == 1
-             unp1(jb+1) = unp1(jb-1)+4*def.a*dx*(n*dt)^2; 
-             unp1(ja-1) = 2*unp1(ja)-unp1(ja+1);
+              
           end
       end
    end

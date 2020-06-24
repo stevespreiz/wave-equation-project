@@ -37,11 +37,12 @@ y = @(x,t) 0.5*(def.f(x-def.c*t)+def.f(x+def.c*t));
 nD = 1;
 icase = 1;
 oacc = 2;
+iTZ = 0;
 
 
 for n = [10 20 50 100]
     def.N = n;
-    [u,er] = nDWaveSolver(def, sigma, 1, 1,1,6);
+    [u,er] = nDWaveSolver(def, sigma, 1, 1,1,2,1);
     if n == 10
         e = er;
     else
