@@ -113,7 +113,20 @@ void BC(Definition* def, double sigma, double* x, int n, double dt, int ja, int 
         // b[0] = -1*f0[0];
         // b[1] = -1*f0[1];
 
-        // Right hand Neumann
+        // Left hand dirclet with lin alg appraoch assume l_tt = 0
+        double x1 = 2.5*unp1[ja]-4/3*unp1[ja+1]+1/12*unp1[ja+2];
+        double x2 = -6*unp1[ja]+4*unp1[ja+1]-unp1[ja+2];
+
+        unp1[ja-1] = .214286*x1 + .017857143*x2;
+        unp1[ja-2] = .857142857*x1 + 1.07142857*x2;
+
+        // Right hand Neumann with lin alg approach assume r_tt = 0
+        //A^-1 = [2 1/6; 4 4/3] -> A-1*b
+        x1 = 2/3*unp1[jb-1]-1/12*unp1[jb-2]+dx*def->r(n*dt);
+        x2 = -2*unp1[jb-1] + unp1[jb-2];
+
+        unp1[jb+1] = 2*x1+x2/6;
+        unp1[jb+2] = 4*x1+4*x2/3;
       }
       else if(oacc == 6){
         // Left hand Dirchlet
@@ -172,11 +185,11 @@ int main(int argc, char* argv[]){
   def->l = l;
   def->r = r;
 
-  double sigma = 0.9;
-  double tf    = 3;
+  double sigma = 0.6;
+  double tf    = 1;
   int nD       = 1;
   int icase    = 1;
-  int oacc     = 2;
+  int oacc     = 4;
 
   /////////////////////////////////////////////////////////////////////////////
   //  Setup
