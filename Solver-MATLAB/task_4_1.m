@@ -3,10 +3,10 @@
 %%
 def.a = 0;
 def.b = 1;
-def.N = 50;
+def.N = 10;
 def.c = 1;
 tf = 2;
-def.f = @(x) pluck(x);
+def.f = @(x) sin(3*pi/2*x);
 def.g = @(x) 0*x;
 def.l = @(t) 0*t;
 def.r = @(t) 0*t;
@@ -14,7 +14,7 @@ sigma = .8;
 
 nD = 1;
 icase = 2;
-oacc = 1;
+oacc = 2;
 
 [un,~] = nDWaveSolver(def,sigma,tf,nD,icase,oacc);
 %%

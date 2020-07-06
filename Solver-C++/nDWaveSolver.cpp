@@ -332,7 +332,10 @@ int main(int argc, char* argv[]){
       fout << un[i] << "\t";
     }
     fout << endl;
-
+    cout << "Enter a character to conitnue";
+    string s;
+    cin >> s;
+    cout << n*dt/tf << endl;
     n++;
   }
 
