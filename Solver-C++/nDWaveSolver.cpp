@@ -10,6 +10,12 @@
 #include <fstream>
 using namespace std;
 
+// declaring LAPACK linear system solver (compile with  -llapack  flag)
+// dgesv_ is a symbol in the LAPACK library files
+extern "C" {
+extern int dgesv_(int*,int*,double*,int*,int*,double*,int*,int*);
+}
+
 // Initial Position
 class F{
 public:
@@ -32,6 +38,11 @@ public:
 class R{
 public:
   double operator() (double x) { return 0; }
+};
+
+class Y{
+public:
+  double operator() (double x, double t, F f, int c = 1) {return 0.5*(f(x-c*t)+f(x+c*t));}
 };
 
 
@@ -91,42 +102,70 @@ void BC(Definition* def, double sigma, double* x, int n, double dt, int ja, int 
         unp1[ja-1] = 2*unp1[ja]-unp1[ja+1];
       }
       else if(oacc == 4){
-        // Left hand Dirchlet
-        // inline double* vecFunc(double u1, double u2){
-        //   double* ret = new double[2];
-        //   ret[1] = pow(def->c,2)/pow(dx,2)*(u1-2*unp1[ja]+unp1[ja+1] - (u2-4*u1+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12);
-        //   ret[2] = pow(def->c,2)/pow(dx,4)*(u2-4*u1+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2]);
-        //   return ret;
-        // };
-        // double* f0 = vecFunc(0,0);
-        // double* f1 = vecFunc(1,0);
-        // double* f2 = vecFunc(0,1);
-        //
-        // double** A = new double*[2];
-        // A[0] = new double[2];
-        // A[1] = new double[2];
-        // A[0][0] = f1[0]-f0[0];
-        // A[1][0] = f1[1]-f0[0];
-        // A[0][1] = f2[0]-f0[0];
-        // A[1][1] = f2[1]-f0[1];
-        // double *b = new double[2];
-        // b[0] = -1*f0[0];
-        // b[1] = -1*f0[1];
+        // Left hand Dirchlet DDFA
+        double* f0 = new double[2];
+        double* f1 = new double[2];
+        double* f2 = new double[2];
+        f0[0] = pow(def->c,2)/pow(dx,2)*(-2*unp1[ja]+unp1[ja+1] - (6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12);
+        f0[1] = pow(def->c,2)/pow(dx,4)*(6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2]);
 
-        // Left hand dirclet with lin alg appraoch assume l_tt = 0
-        double x1 = 2.5*unp1[ja]-4/3*unp1[ja+1]+1/12*unp1[ja+2];
-        double x2 = -6*unp1[ja]+4*unp1[ja+1]-unp1[ja+2];
+        f1[0] = pow(def->c,2)/pow(dx,2)*(1-2*unp1[ja]+unp1[ja+1] - (-4+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12);
+        f1[1] = pow(def->c,2)/pow(dx,4)*(-4+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2]);
 
-        unp1[ja-1] = .214286*x1 + .017857143*x2;
-        unp1[ja-2] = .857142857*x1 + 1.07142857*x2;
+        f2[0] = pow(def->c,2)/pow(dx,2)*(-2*unp1[ja]+unp1[ja+1] - (1+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12);
+        f2[1] = pow(def->c,2)/pow(dx,4)*(1+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2]);
+
+        int n = 2;
+        int nrhs = 1;
+        double*A = new double[n*n];
+        int lda = 2;
+        double* b = new double[n];
+        int ldb = 2;
+        int* ipiv = new int [n];
+        int info;
+
+        A[0] = f1[0]-f0[0];
+        A[1] = f1[1]-f0[1];
+        A[2] = f2[0]-f0[0];
+        A[3] = f2[1]-f0[1];
+
+        b[0] = -1*f0[0];
+        b[1] = -1*f0[1];
+
+        dgesv_(&n,&nrhs,A,&lda,ipiv,b,&ldb,&info);
+
+        unp1[ja-1] = b[0];
+        unp1[ja-2] = b[1];
 
         // Right hand Neumann with lin alg approach assume r_tt = 0
-        //A^-1 = [2 1/6; 4 4/3] -> A-1*b
-        x1 = 2/3*unp1[jb-1]-1/12*unp1[jb-2]+dx*def->r(n*dt);
-        x2 = -2*unp1[jb-1] + unp1[jb-2];
+        f0[0] = -1*unp1[jb-1] - 1/6*(2*unp1[jb-1]-unp1[jb-2]);
+        f0[1] = 2*unp1[jb-1]-unp1[jb-2];
 
-        unp1[jb+1] = 2*x1+x2/6;
-        unp1[jb+2] = 4*x1+4*x2/3;
+        f1[0] = 1-unp1[jb-1] - 1/6*(-2+2*unp1[jb-1]-unp1[jb-2]);
+        f1[1] = -2+2*unp1[jb-1]-unp1[jb-2];
+
+        f2[0] = -1*unp1[jb-1] - 1/6*(1+2*unp1[jb-1]-unp1[jb-2]);
+        f2[1] = 1+unp1[jb-1]-unp1[jb-2];
+
+        A[0] = f1[0]-f0[0];
+        A[1] = f1[1]-f0[1];
+        A[2] = f2[0]-f0[0];
+        A[3] = f2[1]-f0[1];
+
+        b[0] = -1*f0[0];
+        b[1] = -1*f0[1];
+
+        dgesv_(&n,&nrhs,A,&lda,ipiv,b,&ldb,&info);
+
+        unp1[jb+1] = b[0];
+        unp1[jb+2] = b[1];
+
+        delete[] A;
+        delete[] b;
+        delete[] ipiv;
+        delete[] f0;
+        delete[] f1;
+        delete[] f2;
       }
       else if(oacc == 6){
         // Left hand Dirchlet
@@ -141,7 +180,40 @@ void BC(Definition* def, double sigma, double* x, int n, double dt, int ja, int 
         unp1[jb+1] = 2*unp1[jb]-unp1[jb-1];
       }
       else if(oacc == 4){
-        // Left hand Dirchlet
+        // Left hand Dirchlet DDFA
+        double* f0 = new double[2];
+        double* f1 = new double[2];
+        double* f2 = new double[2];
+        f0[0] = pow(def->c,2)/pow(dx,2)*(-2*unp1[ja]+unp1[ja+1] - (6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12);
+        f0[1] = pow(def->c,2)/pow(dx,4)*(6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2]);
+
+        f1[0] = pow(def->c,2)/pow(dx,2)*(1-2*unp1[ja]+unp1[ja+1] - (-4+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12);
+        f1[1] = pow(def->c,2)/pow(dx,4)*(-4+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2]);
+
+        f2[0] = pow(def->c,2)/pow(dx,2)*(-2*unp1[ja]+unp1[ja+1] - (1+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12);
+        f2[1] = pow(def->c,2)/pow(dx,4)*(1+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2]);
+
+        int n = 2;
+        int nrhs = 1;
+        double*A = new double[n*n];
+        int lda = 2;
+        double* b = new double[n];
+        int ldb = 2;
+        int* ipiv = new int [n];
+        int info;
+
+        A[0] = f1[0]-f0[0];
+        A[1] = f1[1]-f0[1];
+        A[2] = f2[0]-f0[0];
+        A[3] = f2[1]-f0[1];
+
+        b[0] = -1*f0[0];
+        b[1] = -1*f0[1];
+
+        dgesv_(&n,&nrhs,A,&lda,ipiv,b,&ldb,&info);
+
+        unp1[ja-1] = b[0];
+        unp1[ja-2] = b[1];
 
         // Right hand Dirchlet
       }
@@ -175,18 +247,19 @@ int main(int argc, char* argv[]){
   G g;
   L l;
   R r;
+  Y y;
 
   def->a = 0;
   def->b = 1;
   def->c = 1;
-  def->N = 100;
+  def->N = 10;
   def->f = f;
   def->g = g;
   def->l = l;
   def->r = r;
 
-  double sigma = 0.6;
-  double tf    = 1;
+  double sigma = 0.8;
+  double tf    = 2;
   int nD       = 1;
   int icase    = 1;
   int oacc     = 4;
@@ -261,6 +334,12 @@ int main(int argc, char* argv[]){
     fout << endl;
 
     n++;
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+  //  Error
+  for(int i = ja; i <= jb; i++){
+    cout << "e: " << (x[i] - y(x[i],tf,f)) << endl;
   }
 
   /////////////////////////////////////////////////////////////////////////////
