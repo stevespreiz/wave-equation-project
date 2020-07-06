@@ -3,18 +3,18 @@
 %%
 def.a = 0;
 def.b = 1;
-def.N = 100;
+def.N = 50;
 def.c = 1;
-tf = 3;
+tf = 2;
 def.f = @(x) pluck(x);
-def.g = @(x) 0.25+0*x;
+def.g = @(x) 0*x;
 def.l = @(t) 0*t;
 def.r = @(t) 0*t;
-sigma = .9;
+sigma = .8;
 
 nD = 1;
 icase = 2;
-oacc = 2;
+oacc = 1;
 
 [un,~] = nDWaveSolver(def,sigma,tf,nD,icase,oacc);
 %%
@@ -25,23 +25,22 @@ def.a = 0;
 def.b = 1;
 def.N = 10;
 def.c = 1;
-tf = 2;
 
 def.f = @(x) sin(3*pi/2*x);
 def.g = @(x) 0*x;
 def.l = @(t) 0*t;
 def.r = @(t) 0*t;
-sigma = .9;
+sigma = .2;
 y = @(x,t) 0.5*(def.f(x-def.c*t)+def.f(x+def.c*t));
 
 nD = 1;
 icase = 1;
-oacc = 2;
-
+oacc = 6;
+tf = 1;
 
 for n = [10 20 50 100]
     def.N = n;
-    [u,er] = nDWaveSolver(def, sigma, 1, 1,1,6);
+    [u,er] = nDWaveSolver(def, sigma, tf,nD,icase,oacc);
     if n == 10
         e = er;
     else

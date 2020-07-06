@@ -34,10 +34,10 @@ while n*dt <= tf
     unp1 = BC(def,sigma,x,n,dt,ja,jb,unp1,nD,icase,oacc);
     
     % Optional Animation
-%     plot(x,unp1);
-%     ylim([-1.1 1.1])
-%     xlim([-.1 1.1])
-%     pause(.1);
+    plot(x,unp1);
+    ylim([-1.1 1.1])
+    xlim([-.1 1.1])
+    pause(.1);
     
     % Update arrays
     unm1 = un;
