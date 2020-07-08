@@ -3,7 +3,7 @@
 %%
 def.a = 0;
 def.b = 1;
-def.N = 10;
+def.N = 100;
 def.c = 1;
 tf = 2;
 def.f = @(x) sin(3*pi/2*x);
@@ -14,7 +14,7 @@ sigma = .5;
 
 nD = 1;
 icase = 1;
-oacc = 2;
+oacc = 4;
 
 [un,~] = nDWaveSolver(def,sigma,tf,nD,icase,oacc);
 %%
