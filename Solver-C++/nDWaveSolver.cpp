@@ -63,9 +63,9 @@ void firstStep(Definition* def, double sigma, double* x, double dt, int ja, int 
     for(int i = ja; i<=jb; i++){
       un[i] = unm1[i]
             + dt*def->g(x[i])
-            + pow(sigma,2)*(unm1[i+1]-2*unm1[i]+unm1[i-1]);
+            + pow(sigma,2)/2*(unm1[i+1]-2*unm1[i]+unm1[i-1]);
       if(oacc > 2){
-        un[i] += -1*pow(sigma,2)*(unm1[i+2]-4*unm1[i+1]+6*unm1[i]-4*unm1[i-1]+unm1[i-2])/12
+        un[i] += -1*pow(sigma,2)/2*(unm1[i+2]-4*unm1[i+1]+6*unm1[i]-4*unm1[i-1]+unm1[i-2])/12
                + dt*pow(sigma,2)/6*( (def->g(x[i+1])-2*def->g(x[i])+def->g(x[i-1])) - (def->g(x[i+2])-4*def->g(x[i+1])+6*def->g(x[i])-4*def->g(x[i-1])+def->g(x[i-2]))/12)
                + pow(sigma,4)/24*(unm1[i+2]-4*unm1[i+1]+6*unm1[i]-4*unm1[i-1]+unm1[i-2]);
         if(oacc > 4){
@@ -258,11 +258,11 @@ int main(int argc, char* argv[]){
   def->l = l;
   def->r = r;
 
-  double sigma = 0.8;
-  double tf    = 2;
-  int nD       = 1;
-  int icase    = 1;
-  int oacc     = 4;
+  double sigma = stod(argv[1]);
+  double tf    = stod(argv[2]);
+  int nD       = atoi(argv[3]);
+  int icase    = atoi(argv[4]);
+  int oacc     = atoi(argv[5]);
 
   /////////////////////////////////////////////////////////////////////////////
   //  Setup
@@ -282,7 +282,7 @@ int main(int argc, char* argv[]){
   fout << endl;
 
   //  Step in time
-  double dttilde = sigma*dx*def->c;
+  double dttilde = sigma*dx/def->c;
   int nt         = ceil(tf/dttilde);
   double dt      = tf/nt;
 
@@ -332,17 +332,19 @@ int main(int argc, char* argv[]){
       fout << un[i] << "\t";
     }
     fout << endl;
-    cout << "Enter a character to conitnue";
-    string s;
-    cin >> s;
-    cout << n*dt/tf << endl;
+
+    // cout << "Enter a character to conitnue";
+    // string s;
+    // cin >> s;
+    // cout << n*dt/tf << endl;
+
     n++;
   }
 
   /////////////////////////////////////////////////////////////////////////////
   //  Error
   for(int i = ja; i <= jb; i++){
-    cout << "e: " << (x[i] - y(x[i],tf,f)) << endl;
+    cout << "e: " << (unp1[i] - y(x[i],tf,f)) << endl;
   }
 
   /////////////////////////////////////////////////////////////////////////////
