@@ -82,7 +82,7 @@ void timeStep(double sigma, int ja, int jb, double* unm1, double* un, double* un
     for(int i = ja; i <= jb; i++){
       unp1[i] = 2*un[i] - unm1[i] + pow(sigma,2)*(un[i+1]-2*un[i]+un[i-1]);
       if(oacc > 2){
-        unp1[i] += (pow(sigma,2)-pow(sigma,4))/12*(un[i+2]-4*un[i+1]+6*un[i]-4*un[i-1]+un[i-2]);
+        unp1[i] -= (pow(sigma,2)-pow(sigma,4))/12*(un[i+2]-4*un[i+1]+6*un[i]-4*un[i-1]+un[i-2]);
         if(oacc > 4){
           unp1[i] += (pow(sigma,2)/90-pow(sigma,4)/72+pow(sigma,6)/720)*(un[i+3]-6*un[i+2]+15*un[i+1]-20*un[i]+15*un[i-1]-6*un[i-2]+un[i-3]);
         }
@@ -137,15 +137,15 @@ void BC(Definition* def, double sigma, double* x, int n, double dt, int ja, int 
         unp1[ja-1] = b[0];
         unp1[ja-2] = b[1];
 
-        // Right hand Neumann with lin alg approach assume r_tt = 0
-        f0[0] = -1*unp1[jb-1] - 1/6*(2*unp1[jb-1]-unp1[jb-2]);
-        f0[1] = 2*unp1[jb-1]-unp1[jb-2];
+        // Right hand Neumann
+        f0[0] = 0 - unp1[jb-1] - 1/3*(0 - 2*0 + 2*unp1[jb-1]-unp1[jb-2]);
+        f0[1] = 0 - 2*0 + 2*unp1[jb-1]-unp1[jb-2];
 
-        f1[0] = 1-unp1[jb-1] - 1/6*(-2+2*unp1[jb-1]-unp1[jb-2]);
-        f1[1] = -2+2*unp1[jb-1]-unp1[jb-2];
+        f1[0] = 1-unp1[jb-1] - 1/3*(0 - 2*1 +2 *unp1[jb-1] - unp1[jb-2]);
+        f1[1] = 0 - 2*1 + 2*unp1[jb-1] - unp1[jb-2];
 
-        f2[0] = -1*unp1[jb-1] - 1/6*(1+2*unp1[jb-1]-unp1[jb-2]);
-        f2[1] = 1+unp1[jb-1]-unp1[jb-2];
+        f2[0] = 0 - unp1[jb-1] - 1/3*(1- 2*0 + 2*unp1[jb-1] - unp1[jb-2]);
+        f2[1] = 1 - 2*0 + 2*unp1[jb-1] - unp1[jb-2];
 
         A[0] = f1[0]-f0[0];
         A[1] = f1[1]-f0[1];
@@ -252,7 +252,7 @@ int main(int argc, char* argv[]){
   def->a = 0;
   def->b = 1;
   def->c = 1;
-  def->N = 10;
+  def->N = 100;
   def->f = f;
   def->g = g;
   def->l = l;
@@ -333,19 +333,16 @@ int main(int argc, char* argv[]){
     }
     fout << endl;
 
-    // cout << "Enter a character to conitnue";
-    // string s;
-    // cin >> s;
-    // cout << n*dt/tf << endl;
-
     n++;
   }
 
   /////////////////////////////////////////////////////////////////////////////
   //  Error
+  double e = 0;
   for(int i = ja; i <= jb; i++){
-    cout << "e: " << (unp1[i] - y(x[i],tf,f)) << endl;
+    e = max(e,unp1[i]-y(x[i],tf,f));
   }
+  cout << "inf norm err: " << e << endl;
 
   /////////////////////////////////////////////////////////////////////////////
   //  Output
