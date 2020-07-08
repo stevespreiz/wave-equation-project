@@ -9,14 +9,20 @@ if nD == 1
             unp1(jb+1) = unp1(jb-1)+2*dx*def.r(n*dt);
             unp1(ja-1) = 2*unp1(ja)-unp1(ja+1);
         elseif oacc == 4
-            % right hand Neumann - need to change to DDFA
-            A = [2/3 -1/12; -2 1];
-            b = A\[2/3*unp1(jb-1)-1/12*unp1(jb-2) + dx*def.r(n*dt)  ;
-                -2*unp1(jb-1)+unp1(jb-2) + 2*dx/sigma^2*(def.r(dt*(n+1))-2*def.r(dt*n)+def.r(dt*(n-1)))];
+            % right hand Neumann 
+            f = @(u) [u(1)-unp1(jb-1) - 1/3*(u(2)-2*u(1)+2*unp1(jb-1)-unp1(jb-2)) - def.r(n*dt)*2*dx ;
+                      u(2) - 2*u(1) + 2*unp1(jb-1)-unp1(jb-2)];
+            f0 = f([0;0]);
+            f1 = f([1;0]);
+            f2 = f([0;1]);
+            A = [f1-f0,f2-f0];
+            b = -1.*f0;
+            u = A\b;
             
-            unp1(jb+1) = b(1);
-            unp1(jb+2) = b(2);
-            
+            unp1(jb+1) = u(1);
+            unp1(jb+2) = u(2);
+                  
+                  
             % left hand Dirchlet assuming l_tt = 0 - discrete delta
             % function approach
             f = @(u) [def.c^2/dx^2*(u(1)-2*unp1(ja)+unp1(ja+1) - (u(2)-4*u(1)+6*unp1(ja)-4*unp1(ja+1)+unp1(ja+2))/12);
