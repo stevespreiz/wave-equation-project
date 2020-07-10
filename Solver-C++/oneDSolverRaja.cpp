@@ -60,10 +60,10 @@ struct Definition {
   R r;
 };
 
-void firstStep(Definition* def, double sigma, double* x, double dt, int ja, int jb,
+void firstStep(Definition* def, double sigma, double* x, double dt, const int ja, const int jb,
         double* unm1, double* un, int nD, int oacc){
   if(nD ==  1){
-    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(ja,jb+1),[=](int i){
+    RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(ja,jb+1),[=](int i){
       un[i] = unm1[i]
             + dt*def->g(x[i])
             + pow(sigma,2)/2*(unm1[i+1]-2*unm1[i]+unm1[i-1]);
@@ -71,16 +71,16 @@ void firstStep(Definition* def, double sigma, double* x, double dt, int ja, int 
   }
 }
 
-void timeStep(double sigma, int ja, int jb, double* unm1, double* un, double* unp1,
+void timeStep(double sigma, const int ja, const int jb, double* unm1, double* un, double* unp1,
         int nD, int oacc){
   if(nD == 1){
-    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(ja,jb+1),[=] (int i){
+    RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(ja,jb+1),[=] (int i){
       unp1[i] = 2*un[i] - unm1[i] + pow(sigma,2)*(un[i+1]-2*un[i]+un[i-1]);
     });
   }
 }
 
-void BC(Definition* def, double sigma, double* x, int n, double dt, int ja, int jb,
+void BC(Definition* def, double sigma, double* x, int n, double dt, const int ja, const int jb,
         double* unp1, int nD, int iCase, int oacc){
   double dx = x[1]-x[0];
   if(nD == 1){
@@ -142,8 +142,8 @@ int main(int argc, char* argv[]){
   //  Setup
 
   //  Set indexing variabls
-  int ja = oacc/2;
-  int jb = def->N + oacc/2;
+  const int ja = oacc/2;
+  const int jb = def->N + oacc/2;
 
   //  Steps in space
   double dx = (def->b - def->a)/def->N;
@@ -220,9 +220,9 @@ int main(int argc, char* argv[]){
 
   /////////////////////////////////////////////////////////////////////////////
   //  Output
-  for(int i = ja; i <= jb; i++){
-    cout << "x: " << x[i] << "\tu = " << un[i] << endl;
-  }
+  // for(int i = ja; i <= jb; i++){
+  //   cout << "x: " << x[i] << "\tu = " << un[i] << endl;
+  // }
 
   fout.close();
   /////////////////////////////////////////////////////////////////////////////
