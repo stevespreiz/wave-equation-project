@@ -28,10 +28,10 @@ def.N = 10;
 def.c = 1;
 tf = 1;
 def.f = @(x) sin(3*pi*x/2);
-def.g = @(x) -sin(3*pi*x/2);
+def.g = @(x) 0*x;
 def.l = @(t) 0*t;
 def.r = @(t) 0*t;
-sigma = .5;
+sigma = .2;
 
 for n = [10 20 50 100 200 500 1000]
     def.N = n;
