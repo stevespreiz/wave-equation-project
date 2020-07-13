@@ -14,6 +14,8 @@ function [u,e] = nDWaveSolver(def,sigma,tf,nD,icase,oacc)
 %       I.C. u(x,0) = f(x), u_t(x,0) = g(x)
 %   oacc       - order of accuracy (2 or 4)
 
+ys = @(x,t) 0.5*(def.f(x-def.c*t)+def.f(x+def.c*t)+ integral(def.g,x-def.c*t,x+def.c*t)/def.c);
+
 % Setup
 [sigma,x,dt,unm1,un,unp1,ja,jb] = setup(def,sigma,tf,nD,oacc);
 
@@ -23,15 +25,15 @@ unm1 = IC(def,x,unm1);
 % First Time Step
 un = firstStep(def,sigma,x,dt,ja,jb,unm1,un,nD,oacc);
 un = BC(def,sigma,x,1,dt,ja,jb,un,nD,icase,oacc);
-
+   
 % Remaining Time Steps
 n = 2;
 while n*dt <= tf
     % Update middle values
     unp1 = timeStep(sigma,ja,jb,unm1,un,unp1,nD,oacc);
-    
+
     % Apply Boundary Condition
-    unp1 = BC(def,sigma,x,n,dt,ja,jb,unp1,nD,icase,oacc);
+     unp1 = BC(def,sigma,x,n,dt,ja,jb,unp1,nD,icase,oacc);
     
     % Optional Animation
 %     plot(x,unp1);

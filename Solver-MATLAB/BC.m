@@ -50,9 +50,12 @@ if nD == 1
             % assuming right hand condition is O(t) (only used in first row
             % of f
             q = 30; % pretty sure this is right
-            f = @(u) [u(1)-unp1(jb-1) - 1/6*(u(2)-2*u(1)+2*unp1(jb-1)-unp1(jb-2)) + 1/q*(u(3)-4*u(2)+5*u(1)-5*unp1(jb-1)+4*unp1(jb-2)-unp1(jb-3))-def.r(n*dt)*dx*2;
-                u(2)-2*u(1)+2*unp1(jb-1)-unp1(jb-2) + 1/q*(u(3)-4*u(2)+5*u(1)-5*unp1(jb-1)+4*unp1(jb-2)-unp1(jb-3));
-                u(3)-4*u(2)+5*u(1)-5*unp1(jb-1)+4*unp1(jb-2)-unp1(jb-3)];
+%             f = @(u) [u(1)-unp1(jb-1) - 1/6*(u(2)-2*u(1)+2*unp1(jb-1)-unp1(jb-2)) + 1/q*(u(3)-4*u(2)+5*u(1)-5*unp1(jb-1)+4*unp1(jb-2)-unp1(jb-3))-def.r(n*dt)*dx*2;
+%                 u(2)-2*u(1)+2*unp1(jb-1)-unp1(jb-2) + 1/q*(u(3)-4*u(2)+5*u(1)-5*unp1(jb-1)+4*unp1(jb-2)-unp1(jb-3));
+%                 u(3)-4*u(2)+5*u(1)-5*unp1(jb-1)+4*unp1(jb-2)-unp1(jb-3)];
+            f = @(u) [-1/60*(-1*u(3) + 9*u(2) - 45*u(1) + 45*unp1(jb-1)-9*unp1(jb-2) + unp1(jb-3));
+                      -1/8 *( 1*u(3) - 8*u(2) + 13*u(1) - 13*unp1(jb-1)+8*unp1(jb-2) - unp1(jb-3));
+                      -1/2 *(-1*u(3) + 4*u(2) - 5* u(1) + 5* unp1(jb-1)-4*unp1(jb-2) + unp1(jb-3))];
             f0 = f([0;0;0]);
             f1 = f([1;0;0]);
             f2 = f([0;1;0]);

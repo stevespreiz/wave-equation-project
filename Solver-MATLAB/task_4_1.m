@@ -15,7 +15,7 @@ y = @(x,t) 0.5*(def.f(x-def.c*t)+def.f(x+def.c*t));
 
 nD = 1;
 icase = 1;
-oacc = 2;
+oacc = 6;
 
 [un,~] = nDWaveSolver(def,sigma,tf,nD,icase,oacc);
 %%
@@ -26,14 +26,14 @@ def.a = 0;
 def.b = 1;
 def.N = 10;
 def.c = 1;
-tf = 2;
+tf = 1;
 def.f = @(x) sin(3*pi*x/2);
-def.g = @(x) 0*x;
+def.g = @(x) -sin(3*pi*x/2);
 def.l = @(t) 0*t;
 def.r = @(t) 0*t;
-sigma = .2;
+sigma = .5;
 
-for n = [10 20 50 100]
+for n = [10 20 50 100 200 500 1000]
     def.N = n;
     [u,er] = nDWaveSolver(def, sigma, 1, 1,1,6);
     if n == 10
@@ -43,7 +43,7 @@ for n = [10 20 50 100]
     end
 end
 
-h = [.1 .05 .02 .01 ];
+h = [.1 .05 .02 .01 .005 .002 .001];
 h2 = h.^2;
 h4 = h.^4;
 h6 = h.^6;
