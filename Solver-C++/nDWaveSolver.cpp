@@ -413,16 +413,12 @@ int main(int argc, char* argv[]){
 
   firstStep(def, sigma, x, dt, ja, jb, unm1, un, nD, oacc);
   BC(def,sigma,x,1,dt,ja,jb,un,nD,icase,oacc);
-  // un[ja-3] = y(x[ja-3],dt,f);
-  // un[ja-2] = y(x[ja-2],dt,f);
-  // un[ja-1] = y(x[ja-1],dt,f);
-  // un[jb+1] = y(x[jb+1],dt,f);
-  // un[jb+2] = y(x[jb+2],dt,f);
-  // un[jb+3] = y(x[jb+3],dt,f);
 
   for(int i = 0; i < arrSize ; i++)
     fout<<un[i] << "\t";
   fout << endl;
+
+  
   /////////////////////////////////////////////////////////////////////////////
   //  Rest of the time steps
   int n = 2;
@@ -431,14 +427,7 @@ int main(int argc, char* argv[]){
     timeStep(sigma,ja,jb,unm1,un,unp1,nD,oacc);
 
     // Update boundary conditions
-    // BC(def,sigma,x,n,dt,ja,jb,unp1,nD,icase,oacc);
-
-    unp1[ja-3] = y(x[ja-3],n*dt,f);
-    unp1[ja-2] = y(x[ja-2],n*dt,f);
-    unp1[ja-1] = y(x[ja-1],n*dt,f);
-    unp1[jb+1] = y(x[jb+1],n*dt,f);
-    unp1[jb+2] = y(x[jb+2],n*dt,f);
-    unp1[jb+3] = y(x[jb+3],n*dt,f);
+    BC(def,sigma,x,n,dt,ja,jb,unp1,nD,icase,oacc);
 
     // Update arrays
     for(int i = 0; i<arrSize; i++){
