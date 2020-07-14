@@ -77,6 +77,22 @@ void timeStep(double sigma, const int ja, const int jb, double* unm1, double* un
     RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(ja,jb+1),[=] (int i){
       unp1[i] = 2*un[i] - unm1[i] + pow(sigma,2)*(un[i+1]-2*un[i]+un[i-1]);
     });
+
+
+    // Explicit parallelization here runs slower than loop_exec above
+    // RAJA::region<RAJA::omp_parallel_region>([=](){
+    //   RAJA::forall<RAJA::omp_for_nowait_exec>(
+    //     RAJA::RangeSegment(ja,(jb-ja)/2),[=](int i){
+    //       unp1[i] = 2*un[i] - unm1[i] + pow(sigma,2)*(un[i+1]-2*un[i]+un[i-1]);
+    //     }
+    //   );
+    //   RAJA::forall<RAJA::omp_for_nowait_exec>(
+    //     RAJA::RangeSegment((jb-ja)/2,jb+1),[=](int i){
+    //       unp1[i] = 2*un[i] - unm1[i] + pow(sigma,2)*(un[i+1]-2*un[i]+un[i-1]);
+    //     }
+    //   );
+    //   }
+    // );
   }
 }
 
