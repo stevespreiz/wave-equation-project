@@ -34,10 +34,10 @@ y = @(x,t) 0.5*(def.f(x-def.c*t)+def.f(x+def.c*t));
 
 nD = 1;
 icase = 1;
-oacc = 4;
-tf = 2;
+oacc = 6;
+tf = 2.892;
 
-for n = [10 20 50 100]
+for n = [10 20 50 100 200 500]
     def.N = n;
     [u,er] = nDWaveSolver(def, sigma, tf,nD,icase,oacc);
     if n == 10
@@ -47,7 +47,7 @@ for n = [10 20 50 100]
     end
 end
 
-h = [.1 .05 .02 .01 ];
+h = [.1 .05 .02 .01 .005 .002];
 h2 = h.^2;
 h4 = h.^4;
 h6 = h.^6;

@@ -179,21 +179,21 @@ void BC(Definition* def, double sigma, double* x, int n, double dt, int ja, int 
         double* f2 = new double[3];
         double* f3 = new double[3];
 
-        f0[0] = 1/180*(2*0 - 27*0 + 270*0 - 490*unp1[ja]  + 270*unp1[ja+1] - 27*unp1[ja+2] + 2*unp1[ja+3]);
-        f0[1] = 1/6*  ( -0 + 12*0 - 39*0  + 56* unp1[ja]  - 39* unp1[ja+1] + 12*unp1[ja+2] -  unp1[ja+3]);
-        f0[2] =          0 - 6*0  + 15*0  - 20* unp1[ja]  + 15* unp1[ja+1] - 6* unp1[ja+2] +  unp1[ja+3];
+        f0[0] = 1/180.*(2*0 - 27*0 + 270*0 - 490*unp1[ja]  + 270*unp1[ja+1] - 27*unp1[ja+2] + 2*unp1[ja+3]);
+        f0[1] = 1/6.*  ( -0 + 12*0 - 39*0  + 56* unp1[ja]  - 39* unp1[ja+1] + 12*unp1[ja+2] -  unp1[ja+3]);
+        f0[2] =           0 - 6*0  + 15*0  - 20* unp1[ja]  + 15* unp1[ja+1] - 6* unp1[ja+2] +  unp1[ja+3];
 
-        f1[0] = 1/180*(2*0 - 27*0 + 270*1 - 490*unp1[ja]  + 270*unp1[ja+1] - 27*unp1[ja+2] + 2*unp1[ja+3]);
-        f1[1] = 1/6*  ( -0 + 12*0 - 39*1  + 56* unp1[ja]  - 39* unp1[ja+1] + 12*unp1[ja+2] -   unp1[ja+3]);
-        f1[2] =          0 - 6*0  + 15*1  - 20* unp1[ja]  + 15* unp1[ja+1] - 6* unp1[ja+2] +   unp1[ja+3];
+        f1[0] = 1/180.*(2*0 - 27*0 + 270*1 - 490*unp1[ja]  + 270*unp1[ja+1] - 27*unp1[ja+2] + 2*unp1[ja+3]);
+        f1[1] = 1/6.*  ( -0 + 12*0 - 39*1  + 56* unp1[ja]  - 39* unp1[ja+1] + 12*unp1[ja+2] -   unp1[ja+3]);
+        f1[2] =           0 - 6*0  + 15*1  - 20* unp1[ja]  + 15* unp1[ja+1] - 6* unp1[ja+2] +   unp1[ja+3];
 
-        f2[0] = 1/180*(2*0 - 27*1 + 270*0 - 490*unp1[ja]  + 270*unp1[ja+1] - 27*unp1[ja+2] + 2*unp1[ja+3]);
-        f2[1] = 1/6*  ( -0 + 12*1 - 39*0  + 56* unp1[ja]  - 39* unp1[ja+1] + 12*unp1[ja+2] -   unp1[ja+3]);
-        f2[2] =          0 - 6* 1 + 15*0  - 20* unp1[ja]  + 15* unp1[ja+1] - 6* unp1[ja+2] +   unp1[ja+3];
+        f2[0] = 1/180.*(2*0 - 27*1 + 270*0 - 490*unp1[ja]  + 270*unp1[ja+1] - 27*unp1[ja+2] + 2*unp1[ja+3]);
+        f2[1] = 1/6.*  ( -0 + 12*1 - 39*0  + 56* unp1[ja]  - 39* unp1[ja+1] + 12*unp1[ja+2] -   unp1[ja+3]);
+        f2[2] =           0 - 6* 1 + 15*0  - 20* unp1[ja]  + 15* unp1[ja+1] - 6* unp1[ja+2] +   unp1[ja+3];
 
-        f3[0] = 1/180*(2*1 - 27*0 + 270*0 - 490*unp1[ja]  + 270*unp1[ja+1] - 27*unp1[ja+2] + 2*unp1[ja+3]);
-        f3[1] = 1/6*  ( -1 + 12*0 - 39*0  + 56* unp1[ja]  - 39* unp1[ja+1] + 12*unp1[ja+2] -   unp1[ja+3]);
-        f3[2] =          1 - 6*0  + 15*0  - 20* unp1[ja]  + 15* unp1[ja+1] - 6* unp1[ja+2] +   unp1[ja+3];
+        f3[0] = 1/180.*(2*1 - 27*0 + 270*0 - 490*unp1[ja]  + 270*unp1[ja+1] - 27*unp1[ja+2] + 2*unp1[ja+3]);
+        f3[1] = 1/6.*  ( -1 + 12*0 - 39*0  + 56* unp1[ja]  - 39* unp1[ja+1] + 12*unp1[ja+2] -   unp1[ja+3]);
+        f3[2] =           1 - 6*0  + 15*0  - 20* unp1[ja]  + 15* unp1[ja+1] - 6* unp1[ja+2] +   unp1[ja+3];
 
 
         int n = 3;
@@ -227,21 +227,21 @@ void BC(Definition* def, double sigma, double* x, int n, double dt, int ja, int 
 
 
         // Right hand Neumann
-        f0[0] = 1/60*(-1*unp1[jb-3] + 9*unp1[jb-2] - 45*unp1[jb-1] + 45*0 - 9*0 + 1*0);
-        f0[1] = 1/8* ( 1*unp1[jb-3] - 8*unp1[jb-2] + 13*unp1[jb-1] - 13*0 + 8*0 - 1*0);
-        f0[2] = 1/2* (-1*unp1[jb-3] + 4*unp1[jb-2] - 5* unp1[jb-1] + 5*0  - 4*0 + 1*0);
+        f0[0] = 1/60.*(-1*unp1[jb-3] + 9*unp1[jb-2] - 45*unp1[jb-1] + 45*0 - 9*0 + 1*0);
+        f0[1] = 1/8.* ( 1*unp1[jb-3] - 8*unp1[jb-2] + 13*unp1[jb-1] - 13*0 + 8*0 - 1*0);
+        f0[2] = 1/2.* (-1*unp1[jb-3] + 4*unp1[jb-2] - 5* unp1[jb-1] + 5*0  - 4*0 + 1*0);
 
-        f1[0] = 1/60*(-1*unp1[jb-3] + 9*unp1[jb-2] - 45*unp1[jb-1] + 45*1 - 9*0 + 1*0);
-        f1[1] = 1/8* ( 1*unp1[jb-3] - 8*unp1[jb-2] + 13*unp1[jb-1] - 13*1 + 8*0 - 1*0);
-        f1[2] = 1/2* (-1*unp1[jb-3] + 4*unp1[jb-2] - 5* unp1[jb-1] + 5* 1 - 4*0 + 1*0);
+        f1[0] = 1/60.*(-1*unp1[jb-3] + 9*unp1[jb-2] - 45*unp1[jb-1] + 45*1 - 9*0 + 1*0);
+        f1[1] = 1/8.* ( 1*unp1[jb-3] - 8*unp1[jb-2] + 13*unp1[jb-1] - 13*1 + 8*0 - 1*0);
+        f1[2] = 1/2.* (-1*unp1[jb-3] + 4*unp1[jb-2] - 5* unp1[jb-1] + 5* 1 - 4*0 + 1*0);
 
-        f2[0] = 1/60*(-1*unp1[jb-3] + 9*unp1[jb-2] - 45*unp1[jb-1] + 45*0 - 9*1 + 1*0);
-        f2[1] = 1/8* ( 1*unp1[jb-3] - 8*unp1[jb-2] + 13*unp1[jb-1] - 13*0 + 8*1 - 1*0);
-        f2[2] = 1/2* (-1*unp1[jb-3] + 4*unp1[jb-2] - 5* unp1[jb-1] + 5* 0 - 4*1 + 1*0);
+        f2[0] = 1/60.*(-1*unp1[jb-3] + 9*unp1[jb-2] - 45*unp1[jb-1] + 45*0 - 9*1 + 1*0);
+        f2[1] = 1/8.* ( 1*unp1[jb-3] - 8*unp1[jb-2] + 13*unp1[jb-1] - 13*0 + 8*1 - 1*0);
+        f2[2] = 1/2.* (-1*unp1[jb-3] + 4*unp1[jb-2] - 5* unp1[jb-1] + 5* 0 - 4*1 + 1*0);
 
-        f3[0] = 1/60*(-1*unp1[jb-3] + 9*unp1[jb-2] - 45*unp1[jb-1] + 45*0 - 9*0 + 1*1);
-        f3[1] = 1/8* ( 1*unp1[jb-3] - 8*unp1[jb-2] + 13*unp1[jb-1] - 13*0 + 8*0 - 1*1);
-        f3[2] = 1/2* (-1*unp1[jb-3] + 4*unp1[jb-2] - 5* unp1[jb-1] + 5* 0 - 4*0 + 1*1);
+        f3[0] = 1/60.*(-1*unp1[jb-3] + 9*unp1[jb-2] - 45*unp1[jb-1] + 45*0 - 9*0 + 1*1);
+        f3[1] = 1/8.* ( 1*unp1[jb-3] - 8*unp1[jb-2] + 13*unp1[jb-1] - 13*0 + 8*0 - 1*1);
+        f3[2] = 1/2.* (-1*unp1[jb-3] + 4*unp1[jb-2] - 5* unp1[jb-1] + 5* 0 - 4*0 + 1*1);
 
 
         A[0] = f1[0]-f0[0];
@@ -284,7 +284,7 @@ void BC(Definition* def, double sigma, double* x, int n, double dt, int ja, int 
         double* f0 = new double[2];
         double* f1 = new double[2];
         double* f2 = new double[2];
-        
+
         f0[0] = pow(def->c,2)/pow(dx,2)*(-2*unp1[ja]+unp1[ja+1] - (6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12);
         f0[1] = pow(def->c,2)/pow(dx,4)*(6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2]);
 
