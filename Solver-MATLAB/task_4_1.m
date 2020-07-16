@@ -29,7 +29,7 @@ def.f = @(x) sin(3*pi/2*x);
 def.g = @(x) 0*x;
 def.l = @(t) 0*t;
 def.r = @(t) 0*t;
-sigma = .8;
+sigma = .2;
 y = @(x,t) 0.5*(def.f(x-def.c*t)+def.f(x+def.c*t));
 
 nD = 1;
