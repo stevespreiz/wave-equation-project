@@ -28,11 +28,11 @@ un = BC(def,sigma,x,1,dt,ja,jb,un,nD,icase,oacc);
 n = 2;
 while n*dt <= tf
     % Update middle values
-    unp1 = timeStep(sigma,ja,jb,unm1,un,unp1,nD,oacc);
+    unp1 = timeStep(def,sigma,x,dt,ja,jb,unm1,un,unp1,nD,oacc);
     
     % Apply Boundary Condition
     unp1 = BC(def,sigma,x,n,dt,ja,jb,unp1,nD,icase,oacc);
-    
+       
     % Optional Animation
 %     plot(x,unp1);
 %     ylim([-1.1 1.1])

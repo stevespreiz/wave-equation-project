@@ -88,7 +88,7 @@ void timeStep(double sigma, int ja, int jb, double* unm1, double* un, double* un
       if(oacc > 2){
         unp1[i] -= (pow(sigma,2)-pow(sigma,4))/12*(un[i+2]-4*un[i+1]+6*un[i]-4*un[i-1]+un[i-2]);
         if(oacc > 4){
-          unp1[i] += (pow(sigma,2)/90-pow(sigma,4)/72+pow(sigma,6)/720)*(un[i+3]-6*un[i+2]+15*un[i+1]-20*un[i]+15*un[i-1]-6*un[i-2]+un[i-3]);
+          unp1[i] += (pow(sigma,2)/90-pow(sigma,4)/72+pow(sigma,6)/360)*(un[i+3]-6*un[i+2]+15*un[i+1]-20*un[i]+15*un[i-1]-6*un[i-2]+un[i-3]);
         }
       }
     }
