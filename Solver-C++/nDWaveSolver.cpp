@@ -8,6 +8,8 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+
+#include <RAJA/RAJA.hpp>
 using namespace std;
 
 // declaring LAPACK linear system solver (compile with  -llapack  flag)
@@ -440,10 +442,19 @@ int main(int argc, char* argv[]){
   /////////////////////////////////////////////////////////////////////////////
   //  Error
   double e = 0;
-  for(int i = ja; i <= jb; i++){
-    e = max(e,unp1[i]-y(x[i],tf,f));
-  }
-  cout << "inf norm err: " << e << endl;
+  //for(int i = ja; i <= jb; i++){
+    //e = max(e,unp1[i]-y(x[i],tf,f));
+  //}
+
+  RAJA::ReduceMax<RAJA::seq_reduce, double> err(-1.0);
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(ja,jb+1),[=] (int i) {
+    double myErr = abs(unp1[i]-y(x[i],tf,f,def->c));
+    err.max(myErr);
+  });
+
+
+  cout << "inf norm err: " << err << endl;
+
 
   /////////////////////////////////////////////////////////////////////////////
   //  Output
