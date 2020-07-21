@@ -71,9 +71,9 @@ void firstStep(Definition* def, double sigma, double* x, double dt, int ja, int 
                + dt*pow(sigma,2)/6.*( (def->g(x[i+1])-2*def->g(x[i])+def->g(x[i-1])) - (def->g(x[i+2])-4*def->g(x[i+1])+6*def->g(x[i])-4*def->g(x[i-1])+def->g(x[i-2]))/12)
                + pow(sigma,4)/24.*(unm1[i+2]-4*unm1[i+1]+6*unm1[i]-4*unm1[i-1]+unm1[i-2]);
         if(oacc > 4){
-          un[i] += pow(sigma,2)/2.*(unm1[i+3]-6*unm1[i+2]+15*unm1[i+1]-20*unm1[i]+15*unm1[i-1]-6*unm1[i-2]+unm1[i-3])/90+
-                   dt*pow(sigma,2)/6.*(def->g(x[i+3])-6*def->g(x[i+2])+15*def->g(x[i+1])-20*def->g(x[i])+15*def->g(x[i-1])-6*def->g(x[i-2])+def->g(x[i-3]))/90+
-                   -pow(sigma,4)/24.*(unm1[i+3]-6*unm1[i+2]+15*unm1[i+1]-20*unm1[i]+15*unm1[i-1]-6*unm1[i-2]+unm1[i-3])/72+
+          un[i] += pow(sigma,2)/2.*(unm1[i+3]-6*unm1[i+2]+15*unm1[i+1]-20*unm1[i]+15*unm1[i-1]-6*unm1[i-2]+unm1[i-3])/90.+
+                   dt*pow(sigma,2)/6.*(def->g(x[i+3])-6*def->g(x[i+2])+15*def->g(x[i+1])-20*def->g(x[i])+15*def->g(x[i-1])-6*def->g(x[i-2])+def->g(x[i-3]))/90.+
+                   -pow(sigma,4)/24.*(unm1[i+3]-6*unm1[i+2]+15*unm1[i+1]-20*unm1[i]+15*unm1[i-1]-6*unm1[i-2]+unm1[i-3])/72.+
                    -dt*pow(sigma,4)/120.*(def->g(x[i+3])-6*def->g(x[i+2])+15*def->g(x[i+1])-20*def->g(x[i])+15*def->g(x[i-1])-6*def->g(x[i-2])+def->g(x[i-3]))+
                    pow(sigma,6)/720.*(unm1[i+3]-6*unm1[i+2]+15*unm1[i+1]-20*unm1[i]+15*unm1[i-1]-6*unm1[i-2]+unm1[i-3]);
         }
@@ -112,13 +112,13 @@ void BC(Definition* def, double sigma, double* x, int n, double dt, int ja, int 
         double* f0 = new double[2];
         double* f1 = new double[2];
         double* f2 = new double[2];
-        f0[0] = pow(def->c,2)/pow(dx,2)*(-2*unp1[ja]+unp1[ja+1] - (6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12);
+        f0[0] = pow(def->c,2)/pow(dx,2)*(-2*unp1[ja]+unp1[ja+1] - (6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12.);
         f0[1] = pow(def->c,2)/pow(dx,4)*(6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2]);
 
-        f1[0] = pow(def->c,2)/pow(dx,2)*(1-2*unp1[ja]+unp1[ja+1] - (-4+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12);
+        f1[0] = pow(def->c,2)/pow(dx,2)*(1-2*unp1[ja]+unp1[ja+1] - (-4+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12.);
         f1[1] = pow(def->c,2)/pow(dx,4)*(-4+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2]);
 
-        f2[0] = pow(def->c,2)/pow(dx,2)*(-2*unp1[ja]+unp1[ja+1] - (1+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12);
+        f2[0] = pow(def->c,2)/pow(dx,2)*(-2*unp1[ja]+unp1[ja+1] - (1+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12.);
         f2[1] = pow(def->c,2)/pow(dx,4)*(1+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2]);
 
         int n = 2;
@@ -285,13 +285,13 @@ void BC(Definition* def, double sigma, double* x, int n, double dt, int ja, int 
         double* f0 = new double[2];
         double* f1 = new double[2];
         double* f2 = new double[2];
-        f0[0] = pow(def->c,2)/pow(dx,2)*(-2*unp1[ja]+unp1[ja+1] - (6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12);
+        f0[0] = pow(def->c,2)/pow(dx,2)*(-2*unp1[ja]+unp1[ja+1] - (6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12.);
         f0[1] = pow(def->c,2)/pow(dx,4)*(6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2]);
 
-        f1[0] = pow(def->c,2)/pow(dx,2)*(1-2*unp1[ja]+unp1[ja+1] - (-4+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12);
+        f1[0] = pow(def->c,2)/pow(dx,2)*(1-2*unp1[ja]+unp1[ja+1] - (-4+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12.);
         f1[1] = pow(def->c,2)/pow(dx,4)*(-4+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2]);
 
-        f2[0] = pow(def->c,2)/pow(dx,2)*(-2*unp1[ja]+unp1[ja+1] - (1+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12);
+        f2[0] = pow(def->c,2)/pow(dx,2)*(-2*unp1[ja]+unp1[ja+1] - (1+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2])/12.);
         f2[1] = pow(def->c,2)/pow(dx,4)*(1+6*unp1[ja]-4*unp1[ja+1]+unp1[ja+2]);
 
         int n = 2;
@@ -320,6 +320,56 @@ void BC(Definition* def, double sigma, double* x, int n, double dt, int ja, int 
       }
       else if(oacc == 6){
         // Left hand Dirchlet
+        double* f0 = new double[3];
+        double* f1 = new double[3];
+        double* f2 = new double[3];
+        double* f3= new double[3];
+
+        f0[0] = 1/180.*(2*0 - 27*0 + 270*0 - 490*unp1[ja]  + 270*unp1[ja+1] - 27*unp1[ja+2] + 2*unp1[ja+3]);
+        f0[1] = 1/6.*  ( -0 + 12*0 - 39*0  + 56* unp1[ja]  - 39* unp1[ja+1] + 12*unp1[ja+2] -  unp1[ja+3]);
+        f0[2] =           0 - 6*0  + 15*0  - 20* unp1[ja]  + 15* unp1[ja+1] - 6* unp1[ja+2] +  unp1[ja+3];
+
+        f1[0] = 1/180.*(2*0 - 27*0 + 270*1 - 490*unp1[ja]  + 270*unp1[ja+1] - 27*unp1[ja+2] + 2*unp1[ja+3]);
+        f1[1] = 1/6.*  ( -0 + 12*0 - 39*1  + 56* unp1[ja]  - 39* unp1[ja+1] + 12*unp1[ja+2] -   unp1[ja+3]);
+        f1[2] =           0 - 6*0  + 15*1  - 20* unp1[ja]  + 15* unp1[ja+1] - 6* unp1[ja+2] +   unp1[ja+3];
+
+        f2[0] = 1/180.*(2*0 - 27*1 + 270*0 - 490*unp1[ja]  + 270*unp1[ja+1] - 27*unp1[ja+2] + 2*unp1[ja+3]);
+        f2[1] = 1/6.*  ( -0 + 12*1 - 39*0  + 56* unp1[ja]  - 39* unp1[ja+1] + 12*unp1[ja+2] -   unp1[ja+3]);
+        f2[2] =           0 - 6* 1 + 15*0  - 20* unp1[ja]  + 15* unp1[ja+1] - 6* unp1[ja+2] +   unp1[ja+3];
+
+        f3[0] = 1/180.*(2*1 - 27*0 + 270*0 - 490*unp1[ja]  + 270*unp1[ja+1] - 27*unp1[ja+2] + 2*unp1[ja+3]);
+        f3[1] = 1/6.*  ( -1 + 12*0 - 39*0  + 56* unp1[ja]  - 39* unp1[ja+1] + 12*unp1[ja+2] -   unp1[ja+3]);
+        f3[2] =           1 - 6*0  + 15*0  - 20* unp1[ja]  + 15* unp1[ja+1] - 6* unp1[ja+2] +   unp1[ja+3];
+
+
+        int n = 3;
+        int nrhs = 1;
+        double*A = new double[n*n];
+        int lda = n;
+        double* b = new double[n];
+        int ldb = n;
+        int* ipiv = new int [n];
+        int info;
+
+        A[0] = f1[0]-f0[0];
+        A[1] = f1[1]-f0[1];
+        A[2] = f1[2]-f0[2];
+        A[3] = f2[0]-f0[0];
+        A[4] = f2[1]-f0[1];
+        A[5] = f2[2]-f0[2];
+        A[6] = f3[0]-f0[0];
+        A[7] = f3[1]-f0[1];
+        A[8] = f3[2]-f0[2];
+
+        b[0] = -1*f0[0];
+        b[1] = -1*f0[1];
+        b[2] = -1*f0[2];
+
+        dgesv_(&n,&nrhs,A,&lda,ipiv,b,&ldb,&info);
+
+        unp1[ja-1] = b[0];
+        unp1[ja-2] = b[1];
+        unp1[ja-3] = b[2];
 
         // Right hand Dirchlet
 
