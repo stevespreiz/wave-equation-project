@@ -43,11 +43,9 @@ public:
   double operator() (double x) { return 0; }
 };
 
-class Y{
-public:
-  double operator() (double x, double t, F f, int c = 1) {return 0.5*(f(x-c*t)+f(x+c*t));}
-};
-
+double ys(double x, double t, F f, double c = 1){
+  return 0.5*(f(x-c*t)+f(x+c*t));
+}
 
 struct Definition {
   double a;
@@ -137,7 +135,6 @@ int main(int argc, char* argv[]){
   G g;
   L l;
   R r;
-  Y y;
 
   def->a = 0;
   def->b = 1;
@@ -186,11 +183,17 @@ int main(int argc, char* argv[]){
 
   /////////////////////////////////////////////////////////////////////////////
   //  Initial Condition
-  for(int i = 0; i < arrSize; i++){
+  RAJA::forall<RAJA::loop_exec>(RAJA::RangeSegment(0,arrSize), [=] (int i){
     unm1[i] = def->f(x[i]);
-    fout << unm1[i] << "\t";
-  }
-  fout << endl;
+  });
+
+
+
+  // for(int i = 0; i < arrSize; i++){
+  //   unm1[i] = def->f(x[i]);
+  //   fout << unm1[i] << "\t";
+  // }
+  // fout << endl;
 
   /////////////////////////////////////////////////////////////////////////////
   //  First Time Step
@@ -198,9 +201,9 @@ int main(int argc, char* argv[]){
   firstStep(def, sigma, x, dt, ja, jb, unm1, un, nD, oacc);
   BC(def,sigma,x,1,dt,ja,jb,un,nD,icase,oacc);
 
-  for(int i = 0; i < arrSize ; i++)
-    fout<<un[i] << "\t";
-  fout << endl;
+  // for(int i = 0; i < arrSize ; i++)
+  //   fout<<un[i] << "\t";
+  // fout << endl;
   /////////////////////////////////////////////////////////////////////////////
   //  Rest of the time steps
   int n = 2;
@@ -218,27 +221,40 @@ int main(int argc, char* argv[]){
     }
 
 
-    for(int i = 0; i< arrSize; i++){
-      fout << un[i] << "\t";
-    }
-    fout << endl;
+    // for(int i = 0; i< arrSize; i++){
+    //   fout << un[i] << "\t";
+    // }
+    // fout << endl;
 
     n++;
   }
 
   /////////////////////////////////////////////////////////////////////////////
   //  Error
-  double e = 0;
-  for(int i = ja; i <= jb; i++){
-    e = max(e,unp1[i]-y(x[i],tf,f));
-  }
-  cout << "inf norm err: " << e << endl;
+  // double e = 0;
+  // for(int i = ja; i <= jb; i++){
+  //   e = max(e,unp1[i]-y(x[i],tf,f));
+  // }
+
+  RAJA::ReduceMax<RAJA::omp_reduce, double> err(0);
+  RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(ja,jb+1),
+    [=] (int i){
+      double myErr = abs(unp1[i] - ys(x[i], tf, f));
+      err.max(myErr);
+  });
+
+  cout << "inf norm err: " << err.get() << endl;
 
   /////////////////////////////////////////////////////////////////////////////
   //  Output
   // for(int i = ja; i <= jb; i++){
   //   cout << "x: " << x[i] << "\tu = " << un[i] << endl;
   // }
+
+  for(int i = 0; i < arrSize; i++){
+    fout << un[i] << "\t";
+  }
+  fout << endl;
 
   fout.close();
   /////////////////////////////////////////////////////////////////////////////

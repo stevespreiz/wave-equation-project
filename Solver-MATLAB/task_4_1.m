@@ -14,7 +14,7 @@ sigma = .5;
 
 nD = 1;
 icase = 1;
-oacc = 4;
+oacc = 6;
 
 [un,~] = nDWaveSolver(def,sigma,tf,nD,icase,oacc);
 %%

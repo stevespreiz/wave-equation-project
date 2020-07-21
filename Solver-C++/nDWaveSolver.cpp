@@ -397,9 +397,9 @@ int main(int argc, char* argv[]){
   //  Initial Condition
   for(int i = 0; i < arrSize; i++){
     unm1[i] = def->f(x[i]);
-    fout << unm1[i] << "\t";
+    // fout << unm1[i] << "\t";
   }
-  fout << endl;
+  // fout << endl;
 
   /////////////////////////////////////////////////////////////////////////////
   //  First Time Step
@@ -407,9 +407,9 @@ int main(int argc, char* argv[]){
   firstStep(def, sigma, x, dt, ja, jb, unm1, un, nD, oacc);
   BC(def,sigma,x,1,dt,ja,jb,un,nD,icase,oacc);
 
-  for(int i = 0; i < arrSize ; i++)
-    fout<<un[i] << "\t";
-  fout << endl;
+  // for(int i = 0; i < arrSize ; i++)
+  //   fout<<un[i] << "\t";
+  // fout << endl;
   /////////////////////////////////////////////////////////////////////////////
   //  Rest of the time steps
   int n = 2;
@@ -427,10 +427,10 @@ int main(int argc, char* argv[]){
     }
 
 
-    for(int i = 0; i< arrSize; i++){
-      fout << un[i] << "\t";
-    }
-    fout << endl;
+    // for(int i = 0; i< arrSize; i++){
+    //   fout << un[i] << "\t";
+    // }
+    // fout << endl;
 
     n++;
   }
@@ -449,6 +449,10 @@ int main(int argc, char* argv[]){
   //   cout << "x: " << x[i] << "\tu = " << un[i] << endl;
   // }
 
+  for(int i = 0; i< arrSize; i++){
+    fout << un[i] << "\t";
+  }
+  fout << endl;
   fout.close();
   /////////////////////////////////////////////////////////////////////////////
   //  Memory Cleanup
