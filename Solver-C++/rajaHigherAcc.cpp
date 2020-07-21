@@ -9,6 +9,9 @@
 #include <iostream>
 #include <fstream>
 using namespace std;
+#include "RAJA/RAJA.hpp"
+
+using X_POL = RAJA::omp_parallel_for_exec;
 
 // declaring LAPACK linear system solver (compile with  -llapack  flag)
 // dgesv_ is a symbol in the LAPACK library files
@@ -40,10 +43,9 @@ public:
   double operator() (double x) { return 0; }
 };
 
-class Y{
-public:
-  double operator() (double x, double t, F f, int c = 1) {return 0.5*(f(x-c*t)+f(x+c*t));}
-};
+double ys(double x, double t, F f, double c = 1){
+  return 0.5*(f(x-c*t)+f(x+c*t));
+}
 
 
 struct Definition {
@@ -60,7 +62,7 @@ struct Definition {
 void firstStep(Definition* def, double sigma, double* x, double dt, int ja, int jb,
         double* unm1, double* un, int nD, int oacc){
   if(nD ==  1){
-    for(int i = ja; i<=jb; i++){
+    RAJA::forall<X_POL>(RAJA::RangeSegment(ja,jb+1),[=](int i){
       un[i] = unm1[i]
             + dt*def->g(x[i])
             + pow(sigma,2)/2.*(unm1[i+1]-2*unm1[i]+unm1[i-1]);
@@ -76,14 +78,14 @@ void firstStep(Definition* def, double sigma, double* x, double dt, int ja, int 
                    pow(sigma,6)/720.*(unm1[i+3]-6*unm1[i+2]+15*unm1[i+1]-20*unm1[i]+15*unm1[i-1]-6*unm1[i-2]+unm1[i-3]);
         }
       }
-    }
+    });
   }
 }
 
 void timeStep(double sigma, int ja, int jb, double* unm1, double* un, double* unp1,
         int nD, int oacc){
   if(nD == 1){
-    for(int i = ja; i <= jb; i++){
+    RAJA::forall<X_POL>(RAJA::RangeSegment(ja,jb+1), [=](int i){
       unp1[i] = 2*un[i] - unm1[i] + pow(sigma,2)*(un[i+1]-2*un[i]+un[i-1]);
       if(oacc > 2){
         unp1[i] -= (pow(sigma,2)-pow(sigma,4))/12.*(un[i+2]-4*un[i+1]+6*un[i]-4*un[i-1]+un[i-2]);
@@ -91,7 +93,7 @@ void timeStep(double sigma, int ja, int jb, double* unm1, double* un, double* un
           unp1[i] += (pow(sigma,2)/90.-pow(sigma,4)/72.+pow(sigma,6)/360.)*(un[i+3]-6*un[i+2]+15*un[i+1]-20*un[i]+15*un[i-1]-6*un[i-2]+un[i-3]);
         }
       }
-    }
+    });
   }
 }
 
@@ -227,7 +229,7 @@ void BC(Definition* def, double sigma, double* x, int n, double dt, int ja, int 
 
         // Right hand Neumann
         f0[0] = 1/60.*(-1*unp1[jb-3] + 9*unp1[jb-2] - 45*unp1[jb-1] + 45*0 - 9*0 + 1*0);
-        f0[1] = 1/8.* ( 1*unp1[jb-3] - 8*unp1[jb-2] + 13*unp1[jb-1] - 13*0 +./ 8*0 - 1*0);
+        f0[1] = 1/8.* ( 1*unp1[jb-3] - 8*unp1[jb-2] + 13*unp1[jb-1] - 13*0 + 8*0 - 1*0);
         f0[2] = 1/2.* (-1*unp1[jb-3] + 4*unp1[jb-2] - 5* unp1[jb-1] + 5*0  - 4*0 + 1*0);
 
         f1[0] = 1/60.*(-1*unp1[jb-3] + 9*unp1[jb-2] - 45*unp1[jb-1] + 45*1 - 9*0 + 1*0);
@@ -346,7 +348,6 @@ int main(int argc, char* argv[]){
   G g;
   L l;
   R r;
-  Y y;
 
   def->a = 0;
   def->b = 1;
@@ -395,10 +396,10 @@ int main(int argc, char* argv[]){
 
   /////////////////////////////////////////////////////////////////////////////
   //  Initial Condition
-  for(int i = 0; i < arrSize; i++){
+  RAJA::forall<X_POL>(RAJA::RangeSegment(0,arrSize),[=](int i){
     unm1[i] = def->f(x[i]);
     // fout << unm1[i] << "\t";
-  }
+  });
   // fout << endl;
 
   /////////////////////////////////////////////////////////////////////////////
@@ -421,10 +422,10 @@ int main(int argc, char* argv[]){
     BC(def,sigma,x,n,dt,ja,jb,unp1,nD,icase,oacc);
 
     // Update arrays
-    for(int i = 0; i<arrSize; i++){
+    RAJA::forall<X_POL>(RAJA::RangeSegment(0,arrSize),[=](int i){
       unm1[i] = un[i];
       un[i] = unp1[i];
-    }
+    });
 
 
     // for(int i = 0; i< arrSize; i++){
@@ -437,11 +438,13 @@ int main(int argc, char* argv[]){
 
   /////////////////////////////////////////////////////////////////////////////
   //  Error
-  double e = 0;
-  for(int i = ja; i <= jb; i++){
-    e = max(e,unp1[i]-y(x[i],tf,f));
-  }
-  cout << "inf norm err: " << e << endl;
+  RAJA::ReduceMax<RAJA::omp_reduce, double> err(0);
+  RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(ja,jb+1),
+    [=] (int i){
+      double myErr = abs(unp1[i] - ys(x[i], tf, f));
+      err.max(myErr);
+  });
+  cout << "inf norm err: " << err << endl;
 
   /////////////////////////////////////////////////////////////////////////////
   //  Output
