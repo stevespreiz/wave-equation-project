@@ -8,6 +8,8 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+
+#include <RAJA/RAJA.hpp>
 using namespace std;
 
 // declaring LAPACK linear system solver (compile with  -llapack  flag)
@@ -88,7 +90,7 @@ void timeStep(double sigma, int ja, int jb, double* unm1, double* un, double* un
       if(oacc > 2){
         unp1[i] -= (pow(sigma,2)-pow(sigma,4))/12*(un[i+2]-4*un[i+1]+6*un[i]-4*un[i-1]+un[i-2]);
         if(oacc > 4){
-          unp1[i] += (pow(sigma,2)/90-pow(sigma,4)/72+pow(sigma,6)/720)*(un[i+3]-6*un[i+2]+15*un[i+1]-20*un[i]+15*un[i-1]-6*un[i-2]+un[i-3]);
+          unp1[i] += (pow(sigma,2)/90-pow(sigma,4)/72+pow(sigma,6)/360)*(un[i+3]-6*un[i+2]+15*un[i+1]-20*un[i]+15*un[i-1]-6*un[i-2]+un[i-3]);
         }
       }
     }
@@ -440,10 +442,19 @@ int main(int argc, char* argv[]){
   /////////////////////////////////////////////////////////////////////////////
   //  Error
   double e = 0;
-  for(int i = ja; i <= jb; i++){
-    e = max(e,unp1[i]-y(x[i],tf,f));
-  }
-  cout << "inf norm err: " << e << endl;
+  //for(int i = ja; i <= jb; i++){
+    //e = max(e,unp1[i]-y(x[i],tf,f));
+  //}
+
+  RAJA::ReduceMax<RAJA::seq_reduce, double> err(-1.0);
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(ja,jb+1),[=] (int i) {
+    double myErr = abs(unp1[i]-y(x[i],tf,f,def->c));
+    err.max(myErr);
+  });
+
+
+  cout << "inf norm err: " << err << endl;
+
 
   /////////////////////////////////////////////////////////////////////////////
   //  Output
