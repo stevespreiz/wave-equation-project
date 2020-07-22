@@ -54,7 +54,7 @@ legend('error','h^2', 'h^4', 'h^6')
 %% 2-D Time
 % close all
 
-def.a = [-1 -1];
+def.a = [0 0];
 def.b = [1 1];
 def.N = [100 100];
 def.c = sqrt(1/2);
