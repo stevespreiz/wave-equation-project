@@ -21,43 +21,96 @@ function [u,e] = nDWaveSolver(def,sigma,tf,nD,icase,oacc)
 unm1 = IC(def,x,y,unm1,nD);
 
 
-% First Time Step
-un = firstStep(def,sigma,x,y,dt,ja,jb,unm1,un,nD,oacc);
-un = BC(def,sigma,x,y,1,dt,ja,jb,un,nD,icase,oacc);
+ys = @(x,y,t) cos(2*pi*t)*sin(2*pi*x)*sin(2*pi*y); 
 
+
+% First Time Step
+% un = firstStep(def,sigma,x,y,dt,ja,jb,unm1,un,nD,oacc);
+for i = ja(1):jb(1)
+    for j = ja(2):jb(2)
+        un(i,j) = ys(x(i),y(j),dt);
+    end
+end
+
+% e = 0;
+% if nD == 2
+%     for i = ja(1):jb(1)
+%         for j = ja(2):jb(2)
+%             e = max( e , abs( un(i,j) - ys( x(i) , y(j) , dt ) ) );
+%         end
+%     end
+% end
+
+
+% un = BC(def,sigma,x,y,1,dt,ja,jb,un,nD,icase,oacc);
+for i = ja(1):jb(1)
+    un(i,ja(2) - 1) = ys(x(i),y(ja(2)-1),dt);
+    un(i,jb(2) + 1) = ys(x(i),y(jb(2)+1),dt);
+end
+for j = ja(2):jb(2)
+    un(ja(1)-1, j) = ys(x(ja(1)-1),y(i),dt);
+    un(jb(1)+1, j) = ys(x(jb(1)+1),y(i),dt);
+end
+% figure(1)
+% xlabel('x')
+% ylabel('y')
 % Remaining Time Steps
 n = 2;
 while n*dt <= tf
     % Update middle values
     unp1 = timeStep(sigma,ja,jb,unm1,un,unp1,nD,oacc);
+%     for i = ja(1):jb(1)
+%         for j = ja(2):jb(2)
+%             unp1(i,j) = ys(x(i),y(j),n*dt);
+%         end
+%     end
     
     % Apply Boundary Condition
-    unp1 = BC(def,sigma,x,y,n,dt,ja,jb,unp1,nD,icase,oacc);
-    
+%     unp1 = BC(def,sigma,x,y,n,dt,ja,jb,unp1,nD,icase,oacc);
+    for i = ja(1):jb(1)
+        unp1(i,ja(2) - 1) = ys(x(i),y(ja(2)-1),n*dt);
+        unp1(i,jb(2) + 1) = ys(x(i),y(jb(2)+1),n*dt);
+    end
+    for j = ja(2):jb(2)
+        unp1(ja(1)-1, j) = ys(x(ja(1)-1),y(i),n*dt);
+        unp1(jb(1)+1, j) = ys(x(jb(1)+1),y(i),n*dt);
+    end
+
     % Optional Animation
-%     plot(x,unp1);
-%     ylim([-1.1 1.1])
-%     xlim([-.1 1.1])
-%     pause;
+%     surf(x,y,unp1);
+%     zlim([-1 1]);
+%     shading interp
+%     pause(.05);
+%     xlabel('x')
+%     ylabel('y')
 
     
     % Update arrays
     unm1 = un;
     un = unp1;
-    
-    
+   
     n = n+1;
 end
 
+% 2D error check with exact sol. on desk pad
 e = 0;
-if icase == 1
-    % Error calc with exact solution for case 1
-    y = @(x,t) 0.5*(def.f(x-def.c*t)+def.f(x+def.c*t)+ integral(def.g,x-def.c*t,x+def.c*t)/def.c);
-
-    for i = ja:jb
-        e = max(e,abs(un(i)-y(x(i),tf)));
+if nD == 2
+    for i = ja(1):jb(1)
+        for j = ja(2):jb(2)
+            e = max( e , abs( un(i,j) - ys( x(i) , y(j) , tf ) ) );
+        end
     end
 end
+
+% e = 0;
+% if icase == 1
+%     % Error calc with exact solution for case 1
+%     y = @(x,t) 0.5*(def.f(x-def.c*t)+def.f(x+def.c*t)+ integral(def.g,x-def.c*t,x+def.c*t)/def.c);
+% 
+%     for i = ja:jb
+%         e = max(e,abs(un(i)-y(x(i),tf)));
+%     end
+% end
 
 u = un;
 

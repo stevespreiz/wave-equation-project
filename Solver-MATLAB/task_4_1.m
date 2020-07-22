@@ -50,32 +50,51 @@ loglog(h,e,'o',h, h2,h,h4,h,h6)
 legend('error','h^2', 'h^4', 'h^6')
 
 
+
 %% 2-D Time
-def.a = [0 0];
+% close all
+
+def.a = [-1 -1];
 def.b = [1 1];
 def.N = [100 100];
-def.c = 4;
+def.c = sqrt(1/2);
 tf = 1;
-def.f = @(x,y) sin(x*pi)*y*(1-y);
+def.f = @(x,y) sin(2*pi*x)*sin(2*pi*y);
 def.g = @(x,y) 0*x*y;
 def.l = @(t) 0*t;
 def.r = @(t) 0*t;
 def.t = @(t) 0*t;
 def.bot = @(t) 0*t;
-sigma = [.35 .35];
+sigma = [.3 .8];
+nD = 2;
+icase = 2;
+oacc = 2;
 
 % Steps in space
 dx = (def.b(1)-def.a(1))/def.N(1);
 x  = linspace(def.a(1) - dx*oacc/2, def.b(1) + dx*oacc/2, def.N(1)+1+oacc);
 
 dy = (def.b(2)-def.a(2))/def.N(2);
-y  = linspace(def.a(2) - dx*oacc/2, def.b(2) + dx*oacc/2, def.N(2)+1+oacc);
-nD = 2;
-icase = 2;
-oacc = 2;
+y  = linspace(def.a(2) - dy*oacc/2, def.b(2) + dy*oacc/2, def.N(2)+1+oacc);
 
-[un,~] = nDWaveSolver(def,sigma,tf,nD,icase,oacc);
 
-surf(x,y,un)
-xlabel('x')
-ylabel('y')
+% [un,e] = nDWaveSolver(def,sigma,tf,nD,icase,oacc);
+
+for n = [10 100 200]
+    def.N(1) = n;
+    def.N(2) = n;
+    [u,er] = nDWaveSolver(def, sigma, tf, nD,icase,oacc);
+    if n == 10
+        e = er;
+    else
+        e = [e er]; 
+    end
+end
+
+h = [.1 .01 .005 ];
+h2 = h.^2*100;
+h4 = h.^4;
+h6 = h.^6;
+figure(2)
+loglog(h,e,'o',h, h2,h,h4)
+legend('error','h^2', 'h^4')

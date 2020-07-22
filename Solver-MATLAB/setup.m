@@ -36,7 +36,7 @@ elseif nD == 2
     
     
     % Steps in time
-    dttilde = norm(sigma)*sqrt(dx^2+dy^2)/def.c;
+    dttilde = sigma(1)*dx*dy/def.c*sqrt(1/dx^2+1/dy^2);
     nt      = ceil(tf/dttilde);
     dt      = tf/nt;
     
