@@ -145,7 +145,7 @@ void firstStep(Definition* def, Sigma* sig, double* x, double* y,double dt, Indi
     }
   }
   else if(nD == 2){
-    int nx = def->N_x;
+    int nx = def->N_x+1+oacc;
     for(int r = ind->ja_x; r <= ind->jb_x; r++){
       for(int c = ind->ja_y; c <= ind->jb_y; c++){
         un(r,c,nx) = unm1(r,c,nx)
@@ -175,7 +175,7 @@ void timeStep(Definition* def, Sigma* sig, Indices* ind, double* unm1, double* u
     }
   }
   else if(nD == 2){
-    int nx = def->N_x;
+    int nx = def->N_x+1+oacc;
     for(int r = ind->ja_x; r <= ind->jb_x; r++){
       for(int c = ind->ja_y; c <= ind->jb_y; c++){
         unp1(r,c,nx) = 2*un(r,c,nx) - unm1(r,c,nx)
@@ -430,7 +430,7 @@ void BC(Definition* def, Sigma* sig, double* x, int n, double dt, Indices* ind,
       int ja_y = ind->ja_y;
       int jb_x = ind->jb_x;
       int jb_y = ind->jb_y;
-      int nx   = def->N_x;
+      int nx   = def->N_x+1+oacc;
 
       if(oacc == 2){
         for(int i = ja_x; i <= jb_x; i++){
@@ -493,7 +493,7 @@ int main(int argc, char* argv[]){
     def->b_x = 1;
     def->a_y = 0;
     def->b_y = 1;
-    def->c = sqrt(1/2);
+    def->c = sqrt(1/2.);
     def->N_x = atoi(argv[6]);
     def->N_y = def->N_x; // same for now
     def->f2 = f2;
@@ -523,7 +523,7 @@ int main(int argc, char* argv[]){
     ind->jb_x = def->N_x+ oacc/2;
 
     //  Steps in space
-    double dx = (def->b_x - def->a_x)/def->N_x;
+    double dx = (def->b_x - def->a_x)/(double)def->N_x;
     arrSize = def->N_x+ 1 + oacc;
     x = new double[arrSize];
     for(int i = 0; i < arrSize; i++){
@@ -550,14 +550,14 @@ int main(int argc, char* argv[]){
     ind->jb_y = def->N_y+ oacc/2;
 
     // Steps in space
-    double dx = (def->b_x - def->a_x)/def->N_x;
+    double dx = (def->b_x - def->a_x)/(double)def->N_x;
     arrSize = def->N_x+ 1 + oacc;
     x = new double[arrSize];
     for(int i = 0; i < arrSize; i++){
       x[i] = (i - oacc/2)*dx;
     }
 
-    double dy = (def->b_y - def->a_y)/def->N_y;
+    double dy = (def->b_y - def->a_y)/(double)def->N_y;
     arrSize = def->N_y+ 1 + oacc;
     y = new double[arrSize];
     for(int i = 0; i < arrSize; i++){
@@ -582,7 +582,6 @@ int main(int argc, char* argv[]){
   double* unm1 = new double[arrSize];
   double* un   = new double[arrSize];
   double* unp1 = new double[arrSize];
-
 
 
   /////////////////////////////////////////////////////////////////////////////
