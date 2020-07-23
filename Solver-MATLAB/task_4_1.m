@@ -78,8 +78,8 @@ dy = (def.b(2)-def.a(2))/def.N(2);
 y  = linspace(def.a(2) - dy*oacc/2, def.b(2) + dy*oacc/2, def.N(2)+1+oacc);
 
 
-% [un,e] = nDWaveSolver(def,sigma,tf,nD,icase,oacc);
-
+[un,e] = nDWaveSolver(def,sigma,tf,nD,icase,oacc);
+%%
 for n = [10 100 200]
     def.N(1) = n;
     def.N(2) = n;

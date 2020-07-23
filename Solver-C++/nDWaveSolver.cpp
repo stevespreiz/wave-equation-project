@@ -9,8 +9,13 @@
 #include <iostream>
 #include <fstream>
 
-#include <RAJA/RAJA.hpp>
+// #include <RAJA/RAJA.hpp>
 using namespace std;
+
+// Indexing macros
+#define unm1(r,c,nx)  unm1[r*nx + c]
+#define   un(r,c,nx)    un[r*nx + c]
+#define unp1(r,c,nx)  unp1[r*nx + c]
 
 // declaring LAPACK linear system solver (compile with  -llapack  flag)
 // dgesv_ is a symbol in the LAPACK library files
@@ -33,35 +38,94 @@ public:
 // Left side BC
 class L{
 public:
-  double operator() (double x) { return 0; }
+  double operator() (double t) { return 0; }
 };
 
 // Right side BC
 class R{
 public:
-  double operator() (double x) { return 0; }
+  double operator() (double t) { return 0; }
 };
 
-class Y{
+// Initial Position
+class F2{
 public:
-  double operator() (double x, double t, F f, int c = 1) {return 0.5*(f(x-c*t)+f(x+c*t));}
+  double operator() (double x,double y) { return sin(2*M_PI*x)*sin(2*M_PI*y); }
 };
+
+// Initial Velocity
+class G2{
+public:
+  double operator() (double x,double y) { return 0; }
+};
+
+// Left side BC
+class L2{
+public:
+  double operator() (double t) { return 0; }
+};
+
+// Right side BC
+class R2{
+public:
+  double operator() (double t) { return 0; }
+};
+
+class T2{
+public:
+  double operator() (double t) { return 0; }
+};
+
+// Right side BC
+class B2{
+public:
+  double operator() (double t) { return 0; }
+};
+
+
+double y1(double x, double t, F f, int c = 1) {
+  return 0.5*(f(x-c*t)+f(x+c*t));
+}
+
+double y2(double x, double y, double t, F2 f, int c = sqrt(1/2)){
+  return cos(2*M_PI*t)*sin(2*M_PI*x)*sin(2*M_PI*y);
+}
 
 
 struct Definition {
-  double a;
-  double b;
+  double a_x,a_y,a_z;
+  double b_x,b_y,b_z;
   double c;
-  int N;
+  int N_x,N_y,N_z;
   F f;
   G g;
   L l;
   R r;
+
+  F2 f2;
+  G2 g2;
+  L2 l2;
+  R2 r2;
+  T2 t2;
+  B2 b2;
 };
 
-void firstStep(Definition* def, double sigma, double* x, double dt, int ja, int jb,
+struct Indices{
+  int ja_x,ja_y,ja_z;
+  int jb_x,jb_y,jb_z;
+};
+
+struct Sigma{
+  double sigma_x,sigma_y,sigma_z;
+};
+
+void firstStep(Definition* def, Sigma* sig, double* x, double* y,double dt, Indices* ind,
         double* unm1, double* un, int nD, int oacc){
   if(nD ==  1){
+    double sigma = sig->sigma_x;
+    int ja = ind->ja_x;
+    int jb = ind->jb_x;
+
     for(int i = ja; i<=jb; i++){
       un[i] = unm1[i]
             + dt*def->g(x[i])
@@ -80,11 +144,26 @@ void firstStep(Definition* def, double sigma, double* x, double dt, int ja, int 
       }
     }
   }
+  else if(nD == 2){
+    int nx = def->N_x;
+    for(int r = ind->ja_x; r <= ind->jb_x; r++){
+      for(int c = ind->ja_y; c <= ind->jb_y; c++){
+        un(r,c,nx) = unm1(r,c,nx)
+                + dt*def->g2(x[r],y[c])
+                + pow(sig->sigma_x,2)/2*(unm1(r-1,c,nx)-2*unm1(r,c,nx)+unm1(r+1,c,nx))
+                + pow(sig->sigma_y,2)/2*(unm1(r,c-1,nx)-2*unm1(r,c,nx)+unm1(r,c+1,nx));
+      }
+    }
+  }
 }
 
-void timeStep(double sigma, int ja, int jb, double* unm1, double* un, double* unp1,
+void timeStep(Definition* def, Sigma* sig, Indices* ind, double* unm1, double* un, double* unp1,
         int nD, int oacc){
   if(nD == 1){
+    double sigma = sig->sigma_x;
+    int ja = ind->ja_x;
+    int jb = ind->jb_x;
+
     for(int i = ja; i <= jb; i++){
       unp1[i] = 2*un[i] - unm1[i] + pow(sigma,2)*(un[i+1]-2*un[i]+un[i-1]);
       if(oacc > 2){
@@ -95,12 +174,26 @@ void timeStep(double sigma, int ja, int jb, double* unm1, double* un, double* un
       }
     }
   }
+  else if(nD == 2){
+    int nx = def->N_x;
+    for(int r = ind->ja_x; r <= ind->jb_x; r++){
+      for(int c = ind->ja_y; c <= ind->jb_y; c++){
+        unp1(r,c,nx) = 2*un(r,c,nx) - unm1(r,c,nx)
+                  + pow(sig->sigma_x,2)*(unm1(r-1,c,nx)-2*unm1(r,c,nx)+unm1(r+1,c,nx))
+                  + pow(sig->sigma_y,2)*(unm1(r,c-1,nx)-2*unm1(r,c,nx)+unm1(r,c+1,nx));
+      }
+    }
+  }
 }
 
-void BC(Definition* def, double sigma, double* x, int n, double dt, int ja, int jb,
+void BC(Definition* def, Sigma* sig, double* x, int n, double dt, Indices* ind,
         double* unp1, int nD, int iCase, int oacc){
-  double dx = x[1]-x[0];
+
   if(nD == 1){
+    double dx = x[1]-x[0];
+    double sigma = sig->sigma_x;
+    int ja = ind->ja_x;
+    int jb = ind->jb_x;
     // Dirchlet left (assume l_tt = 0), Neumann right
     if(iCase == 1){
       if(oacc == 2){
@@ -328,6 +421,29 @@ void BC(Definition* def, double sigma, double* x, int n, double dt, int ja, int 
       }
     }
   }
+  else if(nD == 2){
+    if(iCase == 1){
+
+    }
+    else if(iCase == 2){
+      int ja_x = ind->ja_x;
+      int ja_y = ind->ja_y;
+      int jb_x = ind->jb_x;
+      int jb_y = ind->jb_y;
+      int nx   = def->N_x;
+
+      if(oacc == 2){
+        for(int i = ja_x; i <= jb_x; i++){
+          unp1(i,ja_y-1,nx) = 2*unp1(i,ja_y,nx) - unp1(i, ja_y+1, nx);
+          unp1(i,jb_y+1,nx) = 2*unp1(i,jb_y,nx) - unp1(i, jb_y-1, nx);
+        }
+        for(int i = ja_y; i <= jb_y; i++){
+          unp1(ja_x-1,i,nx) = 2*unp1(ja_x,i,nx) - unp1(ja_x+1,i, nx);
+          unp1(jb_x+1,i,nx) = 2*unp1(jb_x,i,nx) - unp1(jb_x-1,i, nx);
+        }
+      }
+    }
+  }
 }
 
 
@@ -343,87 +459,169 @@ int main(int argc, char* argv[]){
   */
 
   ofstream fout("out.txt");
-
-  // Problem Initialization - eventually move these to command line arguments
-  Definition* def = new Definition;
-  F f;
-  G g;
-  L l;
-  R r;
-  Y y;
-
-  def->a = 0;
-  def->b = 1;
-  def->c = 1;
-  def->N = atoi(argv[6]); // just to make testing easier
-  def->f = f;
-  def->g = g;
-  def->l = l;
-  def->r = r;
-
   double sigma = stod(argv[1]);
   double tf    = stod(argv[2]);
   int nD       = atoi(argv[3]);
   int icase    = atoi(argv[4]);
   int oacc     = atoi(argv[5]);
 
-  /////////////////////////////////////////////////////////////////////////////
-  //  Setup
+  Definition* def = new Definition;
+  F f;
+  G g;
+  L l;
+  R r;
+  F2 f2;
+  G2 g2;
+  L2 l2;
+  R2 r2;
+  T2 t2;
+  B2 b2;
 
-  //  Set indexing variabls
-  int ja = oacc/2;
-  int jb = def->N + oacc/2;
-
-  //  Steps in space
-  double dx = (def->b - def->a)/def->N;
-  int arrSize = def->N + 1 + oacc;
-  double* x = new double[arrSize];
-  for(int i = 0; i < arrSize; i++){
-    x[i] = (i - oacc/2)*dx;
-    fout << x[i] << "\t";
+  // Problem Initialization
+  if(nD == 1){
+    def->a_x = 0;
+    def->b_x = 1;
+    def->c = 1;
+    def->N_x = atoi(argv[6]);
+    def->f = f;
+    def->g = g;
+    def->l = l;
+    def->r = r;
   }
-  fout << endl;
+  else if(nD == 2){
+    def->a_x = 0;
+    def->b_x = 1;
+    def->a_y = 0;
+    def->b_y = 1;
+    def->c = sqrt(1/2);
+    def->N_x = atoi(argv[6]);
+    def->N_y = def->N_x; // same for now
+    def->f2 = f2;
+    def->g2 = g2;
+    def->l2 = l2;
+    def->r2 = r2;
+    def->t2 = t2;
+    def->b2 = b2;
+  }
 
-  //  Step in time
-  double dttilde = sigma*dx/def->c;
-  int nt         = ceil(tf/dttilde);
-  double dt      = tf/nt;
 
-  //  Update sigma
-  sigma = def->c * dt/dx;
+  /////////////////////////////////////////////////////////////////////////////
+  // Setup
+  /////////////////////////////////////////////////////////////////////////////
+  int arrSize;
+  double dt;
+  Indices* ind = new Indices;
+  double* x;
+  double* y;
+  double* z;
+  Sigma* sig = new Sigma;
+  int nx;
 
-  //  Initialize grid
+  if(nD == 1){
+    //  Set indexing variabls
+    ind->ja_x = oacc/2;
+    ind->jb_x = def->N_x+ oacc/2;
+
+    //  Steps in space
+    double dx = (def->b_x - def->a_x)/def->N_x;
+    arrSize = def->N_x+ 1 + oacc;
+    x = new double[arrSize];
+    for(int i = 0; i < arrSize; i++){
+      x[i] = (i - oacc/2)*dx;
+      fout << x[i] << "\t";
+    }
+    fout << endl;
+
+    //  Step in time
+    double dttilde = sigma*dx/def->c;
+    int nt         = ceil(tf/dttilde);
+    dt      = tf/nt;
+
+    nx = arrSize;
+
+    //  Update sigma
+    sig->sigma_x = def->c * dt/dx;
+  }
+  else if(nD == 2){
+    //  Set indexing variabls
+    ind->ja_x = oacc/2;
+    ind->jb_x = def->N_x+ oacc/2;
+    ind->ja_y = oacc/2;
+    ind->jb_y = def->N_y+ oacc/2;
+
+    // Steps in space
+    double dx = (def->b_x - def->a_x)/def->N_x;
+    arrSize = def->N_x+ 1 + oacc;
+    x = new double[arrSize];
+    for(int i = 0; i < arrSize; i++){
+      x[i] = (i - oacc/2)*dx;
+    }
+
+    double dy = (def->b_y - def->a_y)/def->N_y;
+    arrSize = def->N_y+ 1 + oacc;
+    y = new double[arrSize];
+    for(int i = 0; i < arrSize; i++){
+      y[i] = (i - oacc/2)*dy;
+    }
+
+    //  Step in time
+    double dttilde = sigma*dx*dy/def->c*sqrt(1/dx/dx+1/dy/dy);
+    int nt         = ceil(tf/dttilde);
+    dt             = tf/nt;
+
+    //  Update sigma
+    sig->sigma_x = def->c * dt/dx;
+    sig->sigma_y = def->c * dt/dy;
+
+    nx = def->N_x+1+oacc;
+
+    arrSize = arrSize*arrSize;
+  }
+
+  //  Initialize grid - stored in row major order
   double* unm1 = new double[arrSize];
   double* un   = new double[arrSize];
   double* unp1 = new double[arrSize];
 
+
+
   /////////////////////////////////////////////////////////////////////////////
-  //  Initial Condition
-  for(int i = 0; i < arrSize; i++){
-    unm1[i] = def->f(x[i]);
-    fout << unm1[i] << "\t";
+  // Initial Condition
+  /////////////////////////////////////////////////////////////////////////////
+  if(nD == 1){
+    for(int i = 0; i < arrSize; i++){
+      unm1[i] = def->f(x[i]);
+      // fout << unm1[i] << "\t";
+    }
+    // fout << endl;
   }
-  fout << endl;
-
+  else if(nD == 2){
+    for(int i = 0; i < nx; i++){
+      for(int j = 0; j < nx; j++){
+        unm1(i,j,nx) = def->f2(x[i],y[j]);
+      }
+    }
+  }
+  cout << "IC" << endl;
   /////////////////////////////////////////////////////////////////////////////
-  //  First Time Step
+  // First Time Step
+  /////////////////////////////////////////////////////////////////////////////
 
-  firstStep(def, sigma, x, dt, ja, jb, unm1, un, nD, oacc);
-  BC(def,sigma,x,1,dt,ja,jb,un,nD,icase,oacc);
-
-  for(int i = 0; i < arrSize ; i++)
-    fout<<un[i] << "\t";
-  fout << endl;
+  firstStep(def, sig, x, y, dt, ind, unm1, un, nD, oacc);
+  BC(def,sig,x,1,dt,ind,un,nD,icase,oacc);
+  cout << "First Step" << endl;
+  // for(int i = 0; i < arrSize ; i++)
+  //   fout<<un[i] << "\t";
+  // fout << endl;
   /////////////////////////////////////////////////////////////////////////////
   //  Rest of the time steps
+  /////////////////////////////////////////////////////////////////////////////
   int n = 2;
   while(n*dt <= tf){
     // Update middle values
-    timeStep(sigma,ja,jb,unm1,un,unp1,nD,oacc);
-
+    timeStep(def,sig,ind,unm1,un,unp1,nD,oacc);
     // Update boundary conditions
-    BC(def,sigma,x,n,dt,ja,jb,unp1,nD,icase,oacc);
-
+    BC(def,sig,x,n,dt,ind,unp1,nD,icase,oacc);
     // Update arrays
     for(int i = 0; i<arrSize; i++){
       unm1[i] = un[i];
@@ -431,45 +629,62 @@ int main(int argc, char* argv[]){
     }
 
 
-    for(int i = 0; i< arrSize; i++){
-      fout << un[i] << "\t";
-    }
-    fout << endl;
-
+    // for(int i = 0; i< arrSize; i++){
+    //   fout << un[i] << "\t";
+    // }
+    // fout << endl;
+    cout << n << endl;
     n++;
   }
-
+  cout << "Final time reached" << endl;
   /////////////////////////////////////////////////////////////////////////////
   //  Error
-  double e = 0;
-  //for(int i = ja; i <= jb; i++){
-    //e = max(e,unp1[i]-y(x[i],tf,f));
-  //}
+  /////////////////////////////////////////////////////////////////////////////
+  double err = 0;
+  if(nD == 1){
+    for(int i = ind->ja_x; i <= ind->jb_x; i++){
+      err = max(err,unp1[i]-y1(x[i],tf,def->f));
+    }
 
-  RAJA::ReduceMax<RAJA::seq_reduce, double> err(-1.0);
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(ja,jb+1),[=] (int i) {
-    double myErr = abs(unp1[i]-y(x[i],tf,f,def->c));
-    err.max(myErr);
-  });
-
-
+    // RAJA::ReduceMax<RAJA::seq_reduce, double> err(-1.0);
+    // RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(ja,jb+1),[=] (int i) {
+    //   double myErr = abs(unp1[i]-y(x[i],tf,f,def->c));
+    //   err.max(myErr);
+    // });
+  }
+  else if(nD == 2){
+    for(int r = ind->ja_x; r <= ind->jb_x; r++){
+      for(int c = ind->ja_y; c <= ind-> jb_y; c++){
+        err = max(err, abs( unp1(r,c,nx) - y2(x[r],y[c],tf,def->f2) ) );
+      }
+    }
+  }
   cout << "inf norm err: " << err << endl;
-
 
   /////////////////////////////////////////////////////////////////////////////
   //  Output
-  for(int i = ja; i <= jb; i++){
-    cout << "x: " << x[i] << "\tu = " << un[i] << endl;
-  }
-
+  /////////////////////////////////////////////////////////////////////////////
+  // for(int i = ja; i <= jb; i++){
+  //   cout << "x: " << x[i] << "\tu = " << un[i] << endl;
+  // }
+  //
   fout.close();
   /////////////////////////////////////////////////////////////////////////////
   //  Memory Cleanup
+  /////////////////////////////////////////////////////////////////////////////
+
   delete[] unm1;
   delete[] un;
   delete[] unp1;
   delete[] x;
+  delete[] y;
+
+  cout << "Arr Cleaned" << endl;
+  // delete[] z;
   delete def;
+  delete ind;
+  delete sig;
+  cout << "Done" << endl;
 
   return 0;
 }
