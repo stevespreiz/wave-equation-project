@@ -12,10 +12,8 @@
 // #include <RAJA/RAJA.hpp>
 using namespace std;
 
-// Indexing macros
-#define unm1(r,c,nx)  unm1[r*nx + c]
-#define   un(r,c,nx)    un[r*nx + c]
-#define unp1(r,c,nx)  unp1[r*nx + c]
+// Indexing macro
+#define ind2D(r,c,nx) r*nx + c
 
 // declaring LAPACK linear system solver (compile with  -llapack  flag)
 // dgesv_ is a symbol in the LAPACK library files
@@ -148,10 +146,10 @@ void firstStep(Definition* def, Sigma* sig, double* x, double* y,double dt, Indi
     int nx = def->N_x+1+oacc;
     for(int r = ind->ja_x; r <= ind->jb_x; r++){
       for(int c = ind->ja_y; c <= ind->jb_y; c++){
-        un(r,c,nx) = unm1(r,c,nx)
-                + dt*def->g2(x[r],y[c])
-                + pow(sig->sigma_x,2)/2*(unm1(r-1,c,nx)-2*unm1(r,c,nx)+unm1(r+1,c,nx))
-                + pow(sig->sigma_y,2)/2*(unm1(r,c-1,nx)-2*unm1(r,c,nx)+unm1(r,c+1,nx));
+        un[ind2D(r,c,nx)] = unm1[ind2D(r,c,nx)] +
+                dt*def->g2(x[r],y[c]) +
+                pow(sig->sigma_x,2)/2.*(unm1[ind2D(r-1,c,nx)]-2*unm1[ind2D(r,c,nx)]+unm1[ind2D(r+1,c,nx)]) +
+                pow(sig->sigma_y,2)/2.*(unm1[ind2D(r,c-1,nx)]-2*unm1[ind2D(r,c,nx)]+unm1[ind2D(r,c+1,nx)]);
       }
     }
   }
@@ -178,9 +176,9 @@ void timeStep(Definition* def, Sigma* sig, Indices* ind, double* unm1, double* u
     int nx = def->N_x+1+oacc;
     for(int r = ind->ja_x; r <= ind->jb_x; r++){
       for(int c = ind->ja_y; c <= ind->jb_y; c++){
-        unp1(r,c,nx) = 2*un(r,c,nx) - unm1(r,c,nx)
-                  + pow(sig->sigma_x,2)*(unm1(r-1,c,nx)-2*unm1(r,c,nx)+unm1(r+1,c,nx))
-                  + pow(sig->sigma_y,2)*(unm1(r,c-1,nx)-2*unm1(r,c,nx)+unm1(r,c+1,nx));
+        unp1[ind2D(r,c,nx)] = 2*un[ind2D(r,c,nx)] - unm1[ind2D(r,c,nx)]
+                  + pow(sig->sigma_x,2)*(unm1[ind2D(r-1,c,nx)]-2*unm1[ind2D(r,c,nx)]+unm1[ind2D(r+1,c,nx)])
+                  + pow(sig->sigma_y,2)*(unm1[ind2D(r,c-1,nx)]-2*unm1[ind2D(r,c,nx)]+unm1[ind2D(r,c+1,nx)]);
       }
     }
   }
@@ -191,7 +189,7 @@ void BC(Definition* def, Sigma* sig, double* x, int n, double dt, Indices* ind,
 
   if(nD == 1){
     double dx = x[1]-x[0];
-    double sigma = sig->sigma_x;
+    //double sigma = sig->sigma_x;
     int ja = ind->ja_x;
     int jb = ind->jb_x;
     // Dirchlet left (assume l_tt = 0), Neumann right
@@ -434,12 +432,12 @@ void BC(Definition* def, Sigma* sig, double* x, int n, double dt, Indices* ind,
 
       if(oacc == 2){
         for(int i = ja_x; i <= jb_x; i++){
-          unp1(i,ja_y-1,nx) = 2*unp1(i,ja_y,nx) - unp1(i, ja_y+1, nx);
-          unp1(i,jb_y+1,nx) = 2*unp1(i,jb_y,nx) - unp1(i, jb_y-1, nx);
+          unp1[ind2D(i,ja_y-1,nx)] = 2*unp1[ind2D(i,ja_y,nx)] - unp1[ind2D(i, ja_y+1, nx)];
+          unp1[ind2D(i,jb_y+1,nx)] = 2*unp1[ind2D(i,jb_y,nx)] - unp1[ind2D(i, jb_y-1, nx)];
         }
         for(int i = ja_y; i <= jb_y; i++){
-          unp1(ja_x-1,i,nx) = 2*unp1(ja_x,i,nx) - unp1(ja_x+1,i, nx);
-          unp1(jb_x+1,i,nx) = 2*unp1(jb_x,i,nx) - unp1(jb_x-1,i, nx);
+          unp1[ind2D(ja_x-1,i,nx)] = 2*unp1[ind2D(ja_x,i,nx)] - unp1[ind2D(ja_x+1,i, nx)];
+          unp1[ind2D(jb_x+1,i,nx)] = 2*unp1[ind2D(jb_x,i,nx)] - unp1[ind2D(jb_x-1,i, nx)];
         }
       }
     }
@@ -508,12 +506,12 @@ int main(int argc, char* argv[]){
   /////////////////////////////////////////////////////////////////////////////
   // Setup
   /////////////////////////////////////////////////////////////////////////////
-  int arrSize;
+  int arrSize,matSize;
   double dt;
   Indices* ind = new Indices;
   double* x;
   double* y;
-  double* z;
+  // double* z;
   Sigma* sig = new Sigma;
   int nx;
 
@@ -528,9 +526,9 @@ int main(int argc, char* argv[]){
     x = new double[arrSize];
     for(int i = 0; i < arrSize; i++){
       x[i] = (i - oacc/2)*dx;
-      fout << x[i] << "\t";
+    //  fout << x[i] << "\t";
     }
-    fout << endl;
+    //fout << endl;
 
     //  Step in time
     double dttilde = sigma*dx/def->c;
@@ -538,6 +536,7 @@ int main(int argc, char* argv[]){
     dt      = tf/nt;
 
     nx = arrSize;
+    matSize = arrSize;
 
     //  Update sigma
     sig->sigma_x = def->c * dt/dx;
@@ -545,9 +544,9 @@ int main(int argc, char* argv[]){
   else if(nD == 2){
     //  Set indexing variabls
     ind->ja_x = oacc/2;
-    ind->jb_x = def->N_x+ oacc/2;
+    ind->jb_x = def->N_x + oacc/2;
     ind->ja_y = oacc/2;
-    ind->jb_y = def->N_y+ oacc/2;
+    ind->jb_y = def->N_y + oacc/2;
 
     // Steps in space
     double dx = (def->b_x - def->a_x)/(double)def->N_x;
@@ -567,21 +566,21 @@ int main(int argc, char* argv[]){
     //  Step in time
     double dttilde = sigma*dx*dy/def->c*sqrt(1/dx/dx+1/dy/dy);
     int nt         = ceil(tf/dttilde);
-    dt             = tf/nt;
+    dt             = tf/(double)nt;
 
     //  Update sigma
     sig->sigma_x = def->c * dt/dx;
     sig->sigma_y = def->c * dt/dy;
 
-    nx = def->N_x+1+oacc;
+    nx = arrSize;
 
-    arrSize = arrSize*arrSize;
+    matSize = arrSize*arrSize;
   }
 
   //  Initialize grid - stored in row major order
-  double* unm1 = new double[arrSize];
-  double* un   = new double[arrSize];
-  double* unp1 = new double[arrSize];
+  double* unm1 = new double[matSize];
+  double* un   = new double[matSize];
+  double* unp1 = new double[matSize];
 
 
   /////////////////////////////////////////////////////////////////////////////
@@ -597,21 +596,67 @@ int main(int argc, char* argv[]){
   else if(nD == 2){
     for(int i = 0; i < nx; i++){
       for(int j = 0; j < nx; j++){
-        unm1(i,j,nx) = def->f2(x[i],y[j]);
+        unm1[ind2D(i,j,nx)] = def->f2(x[i],y[j]);
+        // fout << unm1[i*nx+j] << "\t";
       }
+      //fout << endl;
     }
   }
   cout << "IC" << endl;
+  // fout << endl << endl << endl;
+
+
   /////////////////////////////////////////////////////////////////////////////
   // First Time Step
   /////////////////////////////////////////////////////////////////////////////
 
-  firstStep(def, sig, x, y, dt, ind, unm1, un, nD, oacc);
-  BC(def,sig,x,1,dt,ind,un,nD,icase,oacc);
+  // firstStep(def, sig, x, y, dt, ind, unm1, un, nD, oacc);
+  // BC(def,sig,x,1,dt,ind,un,nD,icase,oacc);
+
+  for(int i = 0; i < nx; i++){
+    for(int j = 0; j < nx; j++){
+      un[ind2D(i,j,nx)] = y2(x[i],y[j],dt,def->f2);
+    }
+  }
+
+
   cout << "First Step" << endl;
-  // for(int i = 0; i < arrSize ; i++)
-  //   fout<<un[i] << "\t";
+  // for(int i = 0; i < matSize ; i++)
+  //    fout<<un[i] << "\t";
   // fout << endl;
+
+  // for(int i = 0; i < nx; i++){
+  //   for(int j = 0; j < nx; j++){
+  //     fout << un[i*nx+j] << "\t";
+  //   }
+  //   fout << endl;
+  // }
+  // fout << endl;
+
+  // double err = 0;
+  // if(nD == 1){
+  //   for(int i = ind->ja_x; i <= ind->jb_x; i++){
+  //     err = max(err,unp1[i]-y1(x[i],0,def->f));
+  //   }
+  //
+  //   // RAJA::ReduceMax<RAJA::seq_reduce, double> err(-1.0);
+  //   // RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(ja,jb+1),[=] (int i) {
+  //   //   double myErr = abs(unp1[i]-y(x[i],tf,f,def->c));
+  //   //   err.max(myErr);
+  //   // });
+  // }
+  // else if(nD == 2){
+  //   for(int r = ind->ja_x; r <= ind->jb_x; r++){
+  //     for(int c = ind->ja_y; c <= ind-> jb_y; c++){
+  //       err = max(err, abs( un[ind2D(r,c,nx)] - y2(x[r],y[c],dt,def->f2) ) );
+  //     }
+  //   }
+  // }
+
+
+
+
+
   /////////////////////////////////////////////////////////////////////////////
   //  Rest of the time steps
   /////////////////////////////////////////////////////////////////////////////
@@ -654,7 +699,7 @@ int main(int argc, char* argv[]){
   else if(nD == 2){
     for(int r = ind->ja_x; r <= ind->jb_x; r++){
       for(int c = ind->ja_y; c <= ind-> jb_y; c++){
-        err = max(err, abs( unp1(r,c,nx) - y2(x[r],y[c],tf,def->f2) ) );
+        err = max(err, abs( unp1[ind2D(r,c,nx)] - y2(x[r],y[c],tf,def->f2) ) );
       }
     }
   }

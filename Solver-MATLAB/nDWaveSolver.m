@@ -48,9 +48,22 @@ for i = ja(1):jb(1)
     un(i,jb(2) + 1) = ys(x(i),y(jb(2)+1),dt);
 end
 for j = ja(2):jb(2)
-    un(ja(1)-1, j) = ys(x(ja(1)-1),y(i),dt);
-    un(jb(1)+1, j) = ys(x(jb(1)+1),y(i),dt);
+    un(ja(1)-1, j) = ys(x(ja(1)-1),y(j),dt);
+    un(jb(1)+1, j) = ys(x(jb(1)+1),y(j),dt);
+%     un(ja(1), j) = 100000;
+%         un(jb(1), j) = 100000;
 end
+
+% for i = ja(1):jb(1)
+%     for j = ja(2):jb(2)
+%         e(i,j) = un(i,j) - ys( x(i) , y(j) , dt );
+%     end
+% end
+%     surf(x(ja(1):jb(1)),y(ja(2):jb(2)),(e(ja(1):jb(1),ja(2):jb(2))).');
+%     shading interp
+%     xlabel('x')
+%     ylabel('y')
+%     pause
 % figure(1)
 % xlabel('x')
 % ylabel('y')
@@ -72,8 +85,13 @@ while n*dt <= tf
         unp1(i,jb(2) + 1) = ys(x(i),y(jb(2)+1),n*dt);
     end
     for j = ja(2):jb(2)
-        unp1(ja(1)-1, j) = ys(x(ja(1)-1),y(i),n*dt);
-        unp1(jb(1)+1, j) = ys(x(jb(1)+1),y(i),n*dt);
+        unp1(ja(1)-1, j) = ys(x(ja(1)-1),y(j),n*dt);
+        unp1(jb(1)+1, j) = ys(x(jb(1)+1),y(j),n*dt);
+        
+%         unp1(ja(1)-1, j) = 100000;
+%         unp1(jb(1)+1, j) = 10000;
+%         unp1(ja(1), j) = 100000;
+%         unp1(jb(1), j) = 100000;
     end
 
     % Optional Animation
@@ -83,6 +101,18 @@ while n*dt <= tf
 %     pause(.05);
 %     xlabel('x')
 %     ylabel('y')
+
+    % antimate error
+%     for i = ja(1):jb(1)
+%         for j = ja(2):jb(2)
+%             e(i,j) = unp1(i,j) - ys( x(i) , y(j) , n*dt );
+%         end
+%     end
+%     surf(x(ja(1):jb(1)),y(ja(2):jb(2)),(e(ja(1):jb(1),ja(2):jb(2))).');
+%     shading interp
+%     xlabel('x')
+%     ylabel('y')
+%     pause
 
     
     % Update arrays

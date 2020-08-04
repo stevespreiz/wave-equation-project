@@ -52,20 +52,20 @@ legend('error','h^2', 'h^4', 'h^6')
 
 
 %% 2-D Time
-% close all
+close all
 
 def.a = [0 0];
 def.b = [1 1];
 def.N = [100 100];
 def.c = sqrt(1/2);
-tf = 1;
+tf = 1.31;
 def.f = @(x,y) sin(2*pi*x)*sin(2*pi*y);
 def.g = @(x,y) 0*x*y;
 def.l = @(t) 0*t;
 def.r = @(t) 0*t;
 def.t = @(t) 0*t;
 def.bot = @(t) 0*t;
-sigma = [.3 .8];
+sigma = [.45 .8];
 nD = 2;
 icase = 2;
 oacc = 2;
@@ -78,8 +78,7 @@ dy = (def.b(2)-def.a(2))/def.N(2);
 y  = linspace(def.a(2) - dy*oacc/2, def.b(2) + dy*oacc/2, def.N(2)+1+oacc);
 
 
-[un,e] = nDWaveSolver(def,sigma,tf,nD,icase,oacc);
-%%
+% [un,e] = nDWaveSolver(def,sigma,tf,nD,icase,oacc);
 for n = [10 100 200]
     def.N(1) = n;
     def.N(2) = n;
@@ -92,7 +91,7 @@ for n = [10 100 200]
 end
 
 h = [.1 .01 .005 ];
-h2 = h.^2*100;
+h2 = h.^2;
 h4 = h.^4;
 h6 = h.^6;
 figure(2)
